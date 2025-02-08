@@ -1,3 +1,5 @@
+## Written by https://github.com/anthonysecco
+
 sensor:
   - platform: rest
     name: US Public Lands Info
@@ -10,7 +12,7 @@ sensor:
     value_template: "{{ value_json.features[0].attributes.Unit_Nm }}"
     json_attributes:
       - features
-    scan_interval: 600
+    scan_interval: 3600 # Refresh interval.  I don't suggest setting this to less than 300s.
 
 template:
   - sensor:
