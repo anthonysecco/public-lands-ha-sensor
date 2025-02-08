@@ -3,8 +3,6 @@ This YAML configuration will allow you to query the [US Government Protected Are
 
 This sensor should provide information on almost any protected land in the US include federal, state, county, and regional parks.  This can be useful when finding disperesed camping to quickly understand what land and jurisdiction you are within.
 
-
-
 ## Reading Sensors
 
 | Sensor | Description |
@@ -15,7 +13,7 @@ This sensor should provide information on almost any protected land in the US in
 | Management Name | National Park Service, Bureau of Land Management etc. |
 | Designation | Wilderness Area, National Park etc. |
 
-Here are some examples:
+Examples include the following:
 
 ![image](https://github.com/user-attachments/assets/41264f11-ddad-4848-8ee5-fab048410b7e)
 
@@ -27,8 +25,10 @@ When you're not on protected lands you'll see the following:
 
 ![image](https://github.com/user-attachments/assets/d09d836f-99b2-4c6e-aa90-eab69c144fd5)
 
-### Notes
+I suggest using a condition to hide the card when 'Unit Name' is "Non-Protected Area" so as to reduce the clutter on your dashboard.
 
-Accuracy - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 10-15 meters.
+## Notes
 
-Rate Limit - By default the sensor refreshes ever 600s (10 minutes) but can be adjusted up or town.  I haven't confirmed the rate limits so be mindful of that.
+Accuracy - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
+
+Rate Limit - By default the sensor refreshes ever 3600s (1 hour) but can be adjusted up or down.  I haven't confirmed the rate limits but I wouldn't set it to less than 300s.
