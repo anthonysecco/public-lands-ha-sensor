@@ -1,4 +1,4 @@
-# Public Land Sensor
+# USA Public Land Sensor
 This YAML configuration will allow you to query the [US Government Protected Area Data](https://www.arcgis.com/apps/mapviewer/index.html?layers=e80a13374cb74cf2bba8903867b29997) (Internet connection permitting) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
 This sensor should provide information on almost any protected land in the US include federal, state, county, and regional parks.  This can be useful when finding disperesed camping to quickly understand what land and jurisdiction you are within.
