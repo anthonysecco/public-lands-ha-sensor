@@ -31,4 +31,4 @@ I suggest using a condition to hide the card when 'Unit Name' is "Non-Protected 
 
 Accuracy - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
 
-Rate Limit - By default the sensor refreshes ever 3600s (1 hour) but can be adjusted up or down.  I haven't confirmed the rate limits but I wouldn't set it to less than 300s.
+Rate Limit - By default the sensor refreshes ever 3600s (1 hour) but can be adjusted up or down.  I haven't confirmed the rate limits but I wouldn't set it to less than 300s.  If you have the ability to detect if your vehicle is in motion, you can decrease the scan interval while in motion and then increase the scan interval or stop completely when stationary.
