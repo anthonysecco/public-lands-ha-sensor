@@ -49,3 +49,13 @@ template:
       - name: "Designation"
         state: "{{ state_attr('sensor.us_public_lands_info', 'features')[0]['attributes']['DesTp_Desc'] }}"
         icon: "mdi:pine-tree"
+
+  - button:
+    # Allows user to press a button to force a public lands check instead of waiting for the next interval.
+    - name: "Refresh US Public Lands"
+      unique_id: refresh_us_public_lands
+      icon: "mdi:refresh"
+      press:
+        service: homeassistant.update_entity
+        target:
+          entity_id: sensor.us_public_lands_info
