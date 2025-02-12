@@ -23,12 +23,14 @@ Examples include the following:
 
 When you're not on protected lands you'll see the following:
 
-![image](https://github.com/user-attachments/assets/d09d836f-99b2-4c6e-aa90-eab69c144fd5)
+![image](https://github.com/user-attachments/assets/7b9eb1bc-d110-4598-8b87-328c81c1b7ca)
 
 I suggest using a condition to hide the card when 'Unit Name' is "Non-Protected Area" so as to reduce the clutter on your dashboard.
+
+You may use the refresh button to immediately check your current location.  This can be useful when pulling up to a site.
 
 ## Notes
 
 Accuracy - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
 
-Rate Limit - By default the sensor refreshes ever 3600s (1 hour) but can be adjusted up or down.  I haven't confirmed the rate limits but I wouldn't set it to less than 300s.  If you have the ability to detect if your vehicle is in motion, you can decrease the scan interval while in motion and then increase the scan interval or stop completely when stationary.
+By default the sensor refreshes ever 3600s (1 hour).  If you need to immediately check your location, use the refresh button.
