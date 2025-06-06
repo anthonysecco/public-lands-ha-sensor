@@ -13,7 +13,7 @@ With that out of the way, let's get started...
 
 ## Installation
 
-This integration is not yet available in the HACS default store.  To install it via HACS, add it as a custom repository:
+🛑 This integration is not yet available in the HACS default store.  To install it via HACS, add it as a custom repository:
 
 1. In Home Assistant, go to **HACS → Integrations**
 2. Click the **⋮ (three-dot menu)** in the top right
@@ -23,7 +23,7 @@ This integration is not yet available in the HACS default store.  To install it 
    - **Category**: `Integration`
 5. Click **Add**
 
-Then you may click the link below:
+After doing the above, you may then click the link below:
 
 [![Open this repository in your Home Assistant instance.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
