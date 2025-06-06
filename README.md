@@ -1,6 +1,6 @@
 ![icon](https://github.com/user-attachments/assets/de5ad0b3-8f84-4b37-a003-0a3bd3b0b2b2)
 
-# US Public Lands
+# Public Lands
 This is a HACS Custom Component that queries ARCGIS [US Government Protected Area Data]([https://www.arcgis.com/apps/mapviewer/index.html?layers=e80a13374cb74cf2bba8903867b29997](https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Protection_Mechanism_Category_PADUS/FeatureServer/0)) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
 This sensor should provide information on almost any protected land in the United States including federal, state, county, and regional lands.  This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
