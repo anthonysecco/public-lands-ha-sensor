@@ -15,8 +15,6 @@ With that out of the way, let's get started...
 
 ## Installation
 
-To install, 
-
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
 > This integration is not yet available in the HACS default store.  Meanwhile, it will be added as a custom repository.
@@ -123,7 +121,7 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 
 - **Connectivity** - Internet is required at the time of the button press.
 - **Polling** - The integration does not automatically poll.  It leaves this task to the user to configure either manually or via automation.
-- **Frequency** - Please limit you refresh period to no less than **10 minutes** when in motion.
+- **Frequency** - Please limit your automated refresh period to no less than **10 minutes** while in motion.
 - **GPS Accuracy** - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
 - **Data Accuracy** - The API data is refreshed annually in June by USGS (United States Geological Survey).
 
