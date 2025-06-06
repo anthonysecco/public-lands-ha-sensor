@@ -108,6 +108,7 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 ### Example Data
 
 **Public Land**
+
 ![image](https://github.com/user-attachments/assets/00ed28f7-26b3-4228-8489-aa490f7b0807)
 
 ![image](https://github.com/user-attachments/assets/55b51e88-e30e-4279-a5f0-184be36588fa)
