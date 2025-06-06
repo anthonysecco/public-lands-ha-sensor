@@ -33,11 +33,10 @@ class PublicLandsSensor(SensorEntity):
     def state(self):
         return self._data.get(self._key, "Unavailable")
 
-async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback
-) -> None:
+async def async_setup_entry(hass, entry, async_add_entities):
+    if not entry.options.get("enabled", True):
+        return
+
     zone = hass.states.get("zone.home")
     if not zone:
         _LOGGER.error("zone.home not found.")
@@ -45,9 +44,6 @@ async def async_setup_entry(
 
     lat = zone.attributes.get("latitude")
     lon = zone.attributes.get("longitude")
-    if not lat or not lon:
-        _LOGGER.error("zone.home missing coordinates.")
-        return
 
     url = f"https://www.uspubliclands.com/api/v1/location/{lat},{lon}.json"
     try:
