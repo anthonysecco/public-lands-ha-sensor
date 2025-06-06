@@ -13,6 +13,18 @@ With that out of the way, let's get started...
 
 ## Installation
 
+This integration is not yet available in the HACS default store.  To install it via HACS, add it as a custom repository:
+
+1. In Home Assistant, go to **HACS → Integrations**
+2. Click the **⋮ (three-dot menu)** in the top right
+3. Choose **"Custom repositories"**
+4. In the dialog:
+   - **Repository**: `https://github.com/anthonysecco/public-lands-ha-sensor/`
+   - **Category**: `Integration`
+5. Click **Add**
+
+Then you may click the link below:
+
 [![Open this repository in your Home Assistant instance.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
 ### Manual Installation
@@ -26,6 +38,10 @@ With that out of the way, let's get started...
 4. Restart Home Assistant.
 
 ## Usage
+
+Once the integration is added, it will automatically create the sensors and button.  No configuration needed.
+
+No data will be found in those sensors until it is triggered.  Please see the following section for details on that.
 
 ###Trigger Methods
 
@@ -91,15 +107,18 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 
 ### Example Data
 
-![image](https://github.com/user-attachments/assets/41264f11-ddad-4848-8ee5-fab048410b7e)
+**Public Land**
+![image](https://github.com/user-attachments/assets/00ed28f7-26b3-4228-8489-aa490f7b0807)
 
-![image](https://github.com/user-attachments/assets/c3ac2d71-c6d2-41ef-a165-859d7a71b247)
+![image](https://github.com/user-attachments/assets/55b51e88-e30e-4279-a5f0-184be36588fa)
 
-![image](https://github.com/user-attachments/assets/f4857c65-3418-4a58-81db-aba82a3cb361)
+![image](https://github.com/user-attachments/assets/c7ebddaa-8812-429f-bf1b-c62fa6d7a434)
 
-When you're not on protected lands you'll see the following:
+![image](https://github.com/user-attachments/assets/3e7802b6-4a40-4656-91f9-467b24d82469)
 
-![image](https://github.com/user-attachments/assets/7b9eb1bc-d110-4598-8b87-328c81c1b7ca)
+**Non-Public Land**
+
+![image](https://github.com/user-attachments/assets/d542a6f6-8fcd-4da2-8b8c-27b513d92afc)
 
 ## Notes
 
