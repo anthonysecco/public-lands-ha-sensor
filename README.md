@@ -133,7 +133,7 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 
 ## Contributions
 
-Thanks to Smarty Van for [Geolocator](https://github.com/SmartyVan/hass-geolocator).
+Thanks to Smarty Van for [Geolocator](https://github.com/SmartyVan/hass-geolocator) which served as a starting point for this integration.
 
 Open issues, suggest improvements, or contribute pull requests directly here on GitHub.
 
