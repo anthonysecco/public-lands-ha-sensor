@@ -15,13 +15,17 @@ With that out of the way, let's get started...
 
 ## Installation
 
-To install, simply click the link below.
+To install, 
+
+1. Click the link below.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
 > This integration is not yet available in the HACS default store.  Meanwhile, it will be added as a custom repository.
 
-Once installed, restart Home Assistant and the sensors will appear.
+2. Once added, search for **Public Lands** in **HACS**.
+3. Open the page and click 'Download'
+4. Restart Home Assistant
 
 ### Manual Installation
 
@@ -35,9 +39,7 @@ Once installed, restart Home Assistant and the sensors will appear.
 
 ## Usage
 
-Once the integration is added, it will automatically create the sensors and button.  No configuration needed.
-
-No data will be found in those sensors until it is triggered.  Please see the following section for details on that.
+Upon restart, it will automatically create the sensors and button.  No configuration needed.  No data will be found in those sensors until it is triggered.  Please see the following section for details on that.
 
 ###Trigger Methods
 
