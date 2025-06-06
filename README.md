@@ -21,6 +21,8 @@ To install, simply click the link below.
 
 > This integration is not yet available in the HACS default store.  Meanwhile, it will be added as a custom repository.
 
+Once installed, restart Home Assistant and the sensors will appear.
+
 ### Manual Installation
 
 1. Download the source code of the [latest release](https://github.com/anthonysecco/public-lands-ha-sensor/releases).
