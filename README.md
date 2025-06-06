@@ -11,7 +11,7 @@ This sensor should provide information on almost any protected land in the Unite
 >
 > Only available for public lands in the United States.
 
-This integration pairs nicely with [Geolocator](https://github.com/SmartyVan/hass-geolocator) by [SmartyVan](https://www.youtube.com/@SmartyVan).
+This integration pairs nicely with [Geolocator](https://github.com/SmartyVan/hass-geolocator) by [SmartyVan](https://www.youtube.com/@SmartyVan) which provides geocoded address and timezone services.
 
 ⚠️ **Dispersed Camping  Disclaimer** ⚠️
 
