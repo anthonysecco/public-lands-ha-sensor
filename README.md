@@ -6,6 +6,7 @@ This is a HACS Custom Component that queries ARCGIS [US Government Protected Are
 This sensor should provide information on almost any protected land in the United States including federal, state, county, and regional lands.  This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
 
 > An Internet connection is required for this integration to work.
+>
 > Only available for public lands in the United States.
 
 ⚠️ **Dispersed Camping  Disclaimer** ⚠️
