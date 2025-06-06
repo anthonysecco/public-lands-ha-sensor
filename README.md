@@ -1,11 +1,15 @@
 ![icon](https://github.com/user-attachments/assets/de5ad0b3-8f84-4b37-a003-0a3bd3b0b2b2)
 
 # Public Lands
-This is a HACS Custom Component that queries ARCGIS [US Government Protected Area Data]([https://www.arcgis.com/apps/mapviewer/index.html?layers=e80a13374cb74cf2bba8903867b29997](https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Protection_Mechanism_Category_PADUS/FeatureServer/0)) with your current GPS coordinates set in Home Assistant and will post back a response with details.
+This is a HACS Custom Component that queries ARCGIS [US Government Protected Area Data](https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Protection_Mechanism_Category_PADUS/FeatureServer/0) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
 This sensor should provide information on almost any protected land in the United States including federal, state, county, and regional lands.  This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
 
-> Note: An Internet connection is required at the time of query.
+> Note: An Internet connection is required for this integration to work.
+
+⚠️ **Dispersed Camping  Disclaimer** - Use your judgement when deciding where to setup a dispersed camp.  I am not responsible for the accuracy of the data or whether you run into problems at your chosen location.  Refer to the applicable government website for rules and regulations on dispersed camping for your chosen location.
+
+With that out of the way, let's get started...
 
 ## Installation
 
@@ -21,14 +25,18 @@ This sensor should provide information on almost any protected land in the Unite
    ```
 4. Restart Home Assistant.
 
-## Trigger Methods
+## Usage
 
-### Press the Button
+###Trigger Methods
+
+#### Press the Button
 This is simple.  If you want to know your USPL status immediately based on Home Assistant's current coordinate, press the button.
 
-### Create Automation
+![image](https://github.com/user-attachments/assets/57a87b6e-a57f-4bb3-8e7f-d66b9b1e4b7e)
 
-#### Upon GPS Update
+#### Create Automation
+
+##### Upon GPS Update
 Here's an example automation that will refresh USPL data when the zone.home is updated.  It will update at 10 minute intervals when the GPS coordinates are changing.
 
 ```yaml
@@ -48,11 +56,11 @@ action:
 mode: single
 ```
 
-#### Upon Parking
+##### Upon Parking
 If you use a binary sensor to track when RV is moving / not moving, I suggest triggering a button press when transitioning from moving to not moving state.  This will capture the GPS coordinates at the time the vehicle stops and not the last update interval.  This is relevant when stopping to validate the jurisdiction of a campsite.
 
-
-## Reading Sensors
+### Sensors
+The following sensors will be created upon installation.
 
 | Sensor | Description |
 |--------|-------------|
@@ -64,12 +72,24 @@ If you use a binary sensor to track when RV is moving / not moving, I suggest tr
 | API Status | 'On' if last refresh was successful.  'Off' if last refresh failed. |
 | Last Successful Refresh | Timestamp of last referesh |
 
+These sensors will not populate with data unless the USPL Refresh Button is pressed
+
+### Buttons
+The integration will create one button
+
+| Button | Description |
+|--------|-------------|
+| Refresh USPL | Pressing this button will call for the API with Home Assistant's current coordinates. |
+
+The button can be exposed to the UI for manual trigger or via automations previously mentioned.
+
+### Dashboard Visability Recommendations
+
 If you want to hide USPL sensors when they're unavailable (such as no Internet connectivity), use the API status and conditional visability in your dashboard.
 
+If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Non-Protected Area'.
 
-## Example Data
-
-Examples include the following:
+### Example Data
 
 ![image](https://github.com/user-attachments/assets/41264f11-ddad-4848-8ee5-fab048410b7e)
 
@@ -81,12 +101,18 @@ When you're not on protected lands you'll see the following:
 
 ![image](https://github.com/user-attachments/assets/7b9eb1bc-d110-4598-8b87-328c81c1b7ca)
 
-I suggest using a condition to hide the card when 'Unit Name' is "Non-Protected Area" so as to reduce the clutter on your dashboard.
-
-You may use the refresh button to immediately check your current location.  This can be useful when pulling up to a site.
-
 ## Notes
 
-Accuracy - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
+- **Connectivity** - Internet is required at the time of the button press.
+- **Polling** - The integration does not automatically poll.  It leaves this task to the user to configure either manually or via automation.
+- **Frequency** - Please limit you refresh period to no less than **10 minutes** when in motion.
+- **GPS Accuracy** - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
+- **Data Accuracy** - The API data is refreshed annually in June by USGS (United States Geological Survey).
 
-By default the sensor refreshes ever 3600s (1 hour).  If you need to immediately check your location, use the refresh button.
+## Contributions
+
+Open issues, suggest improvements, or contribute pull requests directly here on GitHub.
+
+## License
+
+This project is licensed under the MIT License. For more details, see the LICENSE file.&#x20;
