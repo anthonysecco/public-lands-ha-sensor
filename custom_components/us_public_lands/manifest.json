@@ -1,6 +1,6 @@
 {
-    "domain": "us_public_lands",
-    "name": "US Public Lands",
+    "domain": "public_lands",
+    "name": "Public Lands",
     "codeowners": ["@anthonysecco"],
     "config_flow": true,
     "dependencies": [],
