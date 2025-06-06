@@ -17,15 +17,15 @@ With that out of the way, let's get started...
 
 To install, 
 
-1. Click the link below.
-
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
 > This integration is not yet available in the HACS default store.  Meanwhile, it will be added as a custom repository.
 
-2. Once added, search for **Public Lands** in **HACS**.
-3. Open the page and click 'Download'
-4. Restart Home Assistant
+1. Click "Open HACS Repository" button above and install **Public Lands**
+2. Restart Home Assistant
+3. Navigate to Settings > Devices & Services
+4. Click **Add Integration** at the bottom
+5. Search for **Public Lands**
 
 ### Manual Installation
 
