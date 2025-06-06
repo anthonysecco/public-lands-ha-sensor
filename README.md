@@ -1,4 +1,4 @@
-> Upcoming versions will be refactored into the [HACS](https://hacs.xyz/) store.  Stay tuned.
+
 
 # USA Public Land Sensor
 This YAML configuration will allow you to query the [US Government Protected Area Data](https://www.arcgis.com/apps/mapviewer/index.html?layers=e80a13374cb74cf2bba8903867b29997) (Internet connection permitting) with your current GPS coordinates set in Home Assistant and will post back a response with details.
