@@ -1,3 +1,7 @@
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
+
+---------------
+
 # USA Public Land Sensor
 This YAML configuration will allow you to query the [US Government Protected Area Data](https://www.arcgis.com/apps/mapviewer/index.html?layers=e80a13374cb74cf2bba8903867b29997) (Internet connection permitting) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
