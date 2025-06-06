@@ -7,7 +7,9 @@ This sensor should provide information on almost any protected land in the Unite
 
 > Note: An Internet connection is required for this integration to work.
 
-⚠️ **Dispersed Camping  Disclaimer** - Use your judgement when deciding where to setup a dispersed camp.  I am not responsible for the accuracy of the data or whether you run into problems at your chosen location.  Refer to the applicable government website for rules and regulations on dispersed camping for your chosen location.
+⚠️ **Dispersed Camping  Disclaimer** ⚠️
+
+Use your judgement when deciding where to setup a dispersed camp.  I am not responsible for the accuracy of the data or whether you run into problems at your chosen location.  Refer to the applicable government website for rules and regulations on dispersed camping for your chosen location.
 
 With that out of the way, let's get started...
 
