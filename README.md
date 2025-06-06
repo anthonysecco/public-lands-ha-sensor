@@ -90,7 +90,10 @@ The following sensors will be created upon installation.
 | API Status | 'On' if last refresh was successful.  'Off' if last refresh failed. |
 | Last Successful Refresh | Timestamp of last referesh |
 
-These sensors will not populate with data unless the USPL Refresh Button is pressed
+These sensors will not populate with data unless the USPL Refresh Button is pressed.  You may see 'unknown' after Home Assistant starts until the next button press.
+
+#### No Internet Connection Scenario
+In the event there's no connectivity, the sensors will retain their old values.  API status will be set to 'off'.  Once the condition clears, API status will be set to 'on' and all sensors will refresh.
 
 ### Buttons
 The integration will create one button
