@@ -15,9 +15,9 @@ This sensor should provide information on almost any protected land in the Unite
 
 1. Download the source code of the [latest release](https://github.com/anthonysecco/public-lands-ha-sensor/releases).
 2. Unzip the source code download.
-3. Copy **us_public_lands** from the **custom_components** directory you just downloaded to your Home Assistant **custom_components** directory:
+3. Copy **public_lands** from the **custom_components** directory you just downloaded to your Home Assistant **custom_components** directory:
    ```
-   config/custom_components/us_public_lands/
+   config/custom_components/public_lands/
    ```
 4. Restart Home Assistant.
 
