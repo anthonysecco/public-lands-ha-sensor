@@ -1,6 +1,8 @@
 ![icon](https://github.com/user-attachments/assets/de5ad0b3-8f84-4b37-a003-0a3bd3b0b2b2)
 
 # Public Lands
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/anthonysecco)
+
 This is a HACS Custom Component that queries ARCGIS [US Government Protected Area Data](https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Protection_Mechanism_Category_PADUS/FeatureServer/0) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
 This sensor should provide information on almost any protected land in the United States including federal, state, county, and regional lands.  This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
@@ -8,6 +10,8 @@ This sensor should provide information on almost any protected land in the Unite
 > An Internet connection is required for this integration to work.
 >
 > Only available for public lands in the United States.
+
+This integration pairs nicely with [Geolocator](https://github.com/SmartyVan/hass-geolocator).
 
 ⚠️ **Dispersed Camping  Disclaimer** ⚠️
 
@@ -128,6 +132,8 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 - **Data Accuracy** - The API data is refreshed annually in June by USGS (United States Geological Survey).
 
 ## Contributions
+
+Thanks to Smarty Van for [Geolocator](https://github.com/SmartyVan/hass-geolocator).
 
 Open issues, suggest improvements, or contribute pull requests directly here on GitHub.
 
