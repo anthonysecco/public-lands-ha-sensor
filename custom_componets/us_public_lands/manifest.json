@@ -1,12 +1,12 @@
 {
     "domain": "us_public_lands",
     "name": "US Public Lands",
-    "version": "0.2.0-beta",
+    "codeowners": ["@anthonysecco"],
+    "config_flow": true,
     "dependencies": [],
     "documentation": "https://github.com/anthonysecco/public-lands-ha-sensor",
-    "issue_tracker": "https://github.com/anthonysecco/public-lands-ha-sensor/issue",
-    "codeowners": ["@anthonysecco"],
-    "requirements": [],
     "iot_class": "cloud_polling",
-    "config_flow": true
+    "issue_tracker": "https://github.com/anthonysecco/public-lands-ha-sensor/issue",
+    "requirements": [],
+    "version": "0.2.0-beta"   
   }
