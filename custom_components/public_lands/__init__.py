@@ -8,14 +8,12 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data[DOMAIN].setdefault("sensors", [])
     return True
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.async_create_task(
-        hass.config_entries.async_forward_entry_setups(entry, "sensor")
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setups(entry, "button")
+        hass.config_entries.async_forward_entry_setups(entry, ["sensor", "button"])
     )
     return True
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     unload_sensor = await hass.config_entries.async_forward_entry_unload(entry, "sensor")
