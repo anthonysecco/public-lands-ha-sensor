@@ -140,6 +140,10 @@ Thanks to Smarty Van for [Geolocator](https://github.com/SmartyVan/hass-geolocat
 
 Open issues, suggest improvements, or contribute pull requests directly here on GitHub.
 
+## AI Disclosure
+
+This project was built largely with AI coding tools (Claude). I directed the design and reviewed the changes, but most of the code and documentation was written by AI. Please review the code before relying on it, and open an issue if you find a problem.
+
 ## License
 
 This project is licensed under the MIT License. For more details, see the LICENSE file.&#x20;
