@@ -2,6 +2,7 @@
 
 # Public Lands
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-compatible-blue)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/anthonysecco)
 
 This is a HACS Custom Component that queries ARCGIS [US Government Protected Area Data](https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Protection_Mechanism_Category_PADUS/FeatureServer/0) with your current GPS coordinates set in Home Assistant and will post back a response with details.
 
@@ -133,6 +134,10 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 - **Frequency** - Please limit your automated refresh period to no less than **10 minutes** while in motion.
 - **GPS Accuracy** - The GPS coordinateds are limited to four decimal points (-118.1222,36.5597).  This limits the accuracy to 15 meters.
 - **Data Accuracy** - The API data is refreshed annually in June by USGS (United States Geological Survey).
+
+## 💖 Support
+
+If you found this project useful, consider [buying me a coffee](https://www.buymeacoffee.com/anthonysecco). ☕
 
 ## Contributions
 
