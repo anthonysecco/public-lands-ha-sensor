@@ -57,38 +57,6 @@ Needs the nearby campgrounds option.  A table of the nearest campgrounds, with a
 - **First-come Forest Service campgrounds** open their Forest Service page, which shows whether the site is open.
 - **Other campgrounds** open the Recreation.gov page for their area, such as the national forest.
 
-```yaml
-type: markdown
-content: |
-  {% set s = 'sensor.uspl_nearby_campgrounds' %}
-  {% set camps = state_attr(s, 'campgrounds') or [] %}
-  {% set total = states(s) | int(0) %}
-  {% set hidden = state_attr(s, 'closed_hidden') | int(0) %}
-  ### ⛺ {{ total }} campground{{ '' if total == 1 else 's' }} within {{ state_attr(s, 'radius_mi') | int(25) }} miles
-  {% if total > camps | count %}
-  *Showing the nearest {{ camps | count }}*
-  {% endif %}
-  {% if camps %}
-  | Campground | Miles | Phone |
-  |:---|---:|:---|
-  {%- for c in camps %}
-  | {% if c.url %}[{{ c.name }}]({{ c.url }}){% else %}{{ c.name }}{% endif %} | [{{ c.distance_mi }}]({{ c.directions_url }}) | {{ c.phone or '—' }} |
-  {%- endfor %}
-  {% for c in camps if c.description %}
-
-  **{{ c.name }}:** {{ c.description }}
-  {%- endfor %}
-  {% else %}
-  No Recreation.gov campgrounds nearby.
-  {% endif %}
-  {% if hidden %}
-
-  *{{ hidden }} closed for the season hidden*
-  {% endif %}
-
-  *Data: ridb.recreation.gov*
-```
-
 The `{%-` markers keep the table rows together; without them the table breaks apart.  From Lone Pine, CA in late October it shows:
 
 > ### ⛺ 3 campgrounds within 25 miles
