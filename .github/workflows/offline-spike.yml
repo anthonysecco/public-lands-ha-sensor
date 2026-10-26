@@ -1,7 +1,9 @@
 name: Offline pack spike
 
-# Phase 0 experiment for v0.4.0: build an offline land pack from the official
-# services, measure its size, and compare its answers with the live services.
+# Phase 0 experiment for v0.4.0: build offline land packs from the official
+# services, measure their size and speed, and compare answers with the live
+# services. v2 cuts boundaries along a grid, stores strings once and builds
+# per-state files plus an index.
 on:
   push:
     branches: [spike/offline-pack]
@@ -15,22 +17,43 @@ permissions:
 
 jobs:
   pack:
-    name: Build pack and check accuracy
+    name: Build v2 packs and check accuracy
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
-      - name: Build pack
-        run: python scripts/offline/build_pack.py pack-out
-      - name: Check accuracy against live services
-        run: python scripts/offline/check_accuracy.py pack-out/public_lands_us.sqlite pack-out
-      - uses: actions/upload-artifact@v4
+          python-version: "3.13"
+      - name: Install build tools
+        run: pip install shapely pyshp numpy
+      - name: Restore raw download
+        id: raw
+        uses: actions/cache/restore@v4
         with:
-          name: offline-pack-spike
+          path: raw
+          key: offline-raw-2026-10-v1
+      - name: Download raw boundaries (gently paged)
+        if: steps.raw.outputs.cache-hit != 'true'
+        run: python scripts/offline/fetch.py raw
+      - name: Save raw download for later runs
+        if: steps.raw.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: raw
+          key: offline-raw-2026-10-v1
+      - name: Download Census state boundaries
+        run: curl -sSfL -o cb_2024_us_state_500k.zip https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_500k.zip
+      - name: Build v2 packs
+        run: python scripts/offline/build_v2.py raw cb_2024_us_state_500k.zip pack-out
+      - name: Check accuracy, coverage and speed
+        run: python scripts/offline/check_v2.py pack-out raw
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-pack-spike-v2
           path: |
             pack-out/*.xz
+            pack-out/states/*.xz
             pack-out/*.json
           retention-days: 14
