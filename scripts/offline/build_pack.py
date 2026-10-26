@@ -42,9 +42,9 @@ PAUSE = 0.5  # seconds between requests, to be gentle on the servers
 SAMPLE_STATES = ("CA", "NV", "AZ", "MD")
 
 
-def get_json(url: str, params: dict[str, str]) -> dict:
+def get_json(url: str, params: dict[str, str], attempts: int = 5) -> dict:
     full = f"{url}?{urllib.parse.urlencode(params)}"
-    for attempt in range(5):
+    for attempt in range(attempts):
         try:
             req = urllib.request.Request(full, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=180) as resp:
@@ -66,33 +66,49 @@ def oid_field(layer: str) -> str:
     return next(f["name"] for f in info["fields"] if f["type"] == "esriFieldTypeOID")
 
 
-def pages(layer: str, where: str, fields: str):
+def pages(layer: str, where: str, fields: str, start_size: int = PAGE):
+    """Yield pages of features in OBJECTID order.
+
+    The page size adapts: it halves when the server fails (some BLM records
+    are a whole state's land in one polygon) and grows back after successes.
+    """
     oid = oid_field(layer)
     last = -1
     n = 0
+    size = start_size
+    next_report = 20_000
+    name = layer.rsplit("/", 3)[-3]
     while True:
-        data = get_json(
-            f"{layer}/query",
-            {
-                "where": f"({where}) AND {oid} > {last}",
-                "outFields": f"{oid},{fields}",
-                "orderByFields": f"{oid} ASC",
-                "resultRecordCount": str(PAGE),
-                "returnGeometry": "true",
-                "outSR": "4326",
-                "maxAllowableOffset": SIMPLIFY_DEG,
-                "geometryPrecision": "5",
-                "f": "json",
-            },
-        )
+        params = {
+            "where": f"({where}) AND {oid} > {last}",
+            "outFields": f"{oid},{fields}",
+            "orderByFields": f"{oid} ASC",
+            "resultRecordCount": str(size),
+            "returnGeometry": "true",
+            "outSR": "4326",
+            "maxAllowableOffset": SIMPLIFY_DEG,
+            "geometryPrecision": "5",
+            "f": "json",
+        }
+        try:
+            data = get_json(f"{layer}/query", params, attempts=2 if size > 1 else 5)
+        except RuntimeError:
+            if size == 1:
+                raise
+            size = max(1, size // 2)
+            print(f"  {name}: page size down to {size}", flush=True)
+            continue
         feats = data.get("features") or []
         if not feats:
             return
         n += len(feats)
         last = max(f["attributes"][oid] for f in feats)
-        if (n // PAGE) % 20 == 0:
-            print(f"  {layer.rsplit('/', 3)[-3]}: {n:,} records", flush=True)
+        if n >= next_report:
+            print(f"  {name}: {n:,} records (page size {size})", flush=True)
+            next_report += 20_000
         yield feats
+        if size < PAGE:
+            size = min(PAGE, size * 2)
         time.sleep(PAUSE)
 
 
@@ -131,7 +147,8 @@ def build(db_path: Path) -> dict:
 
     print("BLM Surface Management (non-private)", flush=True)
     for feats in pages(
-        SMA_LAYER, "ADMIN_AGENCY_CODE NOT IN ('PVT','UND')", "ADMIN_AGENCY_CODE,ADMIN_ST"
+        SMA_LAYER, "ADMIN_AGENCY_CODE NOT IN ('PVT','UND')", "ADMIN_AGENCY_CODE,ADMIN_ST",
+        start_size=50,
     ):
         for f in feats:
             rings = (f.get("geometry") or {}).get("rings")
@@ -205,6 +222,27 @@ def main() -> None:
         extract_state(national, st, p)
         report["states"][st] = sizes(p)
 
+    # BLM geometry split: agencies PAD-US already covers vs land only BLM's map has.
+    conn = sqlite3.connect(national)
+    in_padus = ("BLM", "USFS", "NPS", "FWS", "USBR")
+    marks = ",".join("?" * len(in_padus))
+    report["sma_split_mb"] = {
+        "agencies_also_in_padus": round((conn.execute(
+            f"SELECT COALESCE(SUM(LENGTH(geom)),0) FROM sma WHERE agency IN ({marks})", in_padus
+        ).fetchone()[0]) / 1e6, 1),
+        "other_land_only_in_blm_map": round((conn.execute(
+            f"SELECT COALESCE(SUM(LENGTH(geom)),0) FROM sma WHERE agency NOT IN ({marks})", in_padus
+        ).fetchone()[0]) / 1e6, 1),
+        "padus_geometry": round(conn.execute("SELECT SUM(LENGTH(geom)) FROM padus").fetchone()[0] / 1e6, 1),
+    }
+    report["sma_by_agency_mb"] = {
+        a: round(b / 1e6, 1)
+        for a, b in conn.execute(
+            "SELECT agency, SUM(LENGTH(geom)) FROM sma GROUP BY agency ORDER BY 2 DESC"
+        )
+    }
+    conn.close()
+
     # Table sizes inside the national file (approximate, via dbstat if available).
     try:
         conn = sqlite3.connect(national)
@@ -232,6 +270,13 @@ def main() -> None:
     ]
     for st, s in report["states"].items():
         lines.append(f"| {st} | {s['raw_mb']} | {s['gzip_mb']} | {s['xz_mb']} |")
+    split = report["sma_split_mb"]
+    lines += [
+        "",
+        f"Geometry (uncompressed MB): PAD-US {split['padus_geometry']}; BLM map, agencies also in "
+        f"PAD-US {split['agencies_also_in_padus']}; BLM map, other land {split['other_land_only_in_blm_map']}.",
+        "BLM by agency (MB): " + ", ".join(f"{k} {v}" for k, v in report["sma_by_agency_mb"].items()),
+    ]
     if "tables_mb" in report:
         lines += ["", "Table sizes (MB): " + ", ".join(f"{k} {v}" for k, v in report["tables_mb"].items())]
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
