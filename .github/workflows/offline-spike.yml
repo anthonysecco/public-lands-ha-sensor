@@ -1,0 +1,36 @@
+name: Offline pack spike
+
+# Phase 0 experiment for v0.4.0: build an offline land pack from the official
+# services, measure its size, and compare its answers with the live services.
+on:
+  push:
+    branches: [spike/offline-pack]
+    paths:
+      - "scripts/offline/**"
+      - ".github/workflows/offline-spike.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    name: Build pack and check accuracy
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Build pack
+        run: python scripts/offline/build_pack.py pack-out
+      - name: Check accuracy against live services
+        run: python scripts/offline/check_accuracy.py pack-out/public_lands_us.sqlite pack-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: offline-pack-spike
+          path: |
+            pack-out/*.xz
+            pack-out/*.json
+          retention-days: 14
