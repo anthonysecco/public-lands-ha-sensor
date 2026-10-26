@@ -86,7 +86,7 @@ These are off by default.  Turn them on in [Configuration](#configuration).  The
 | Option | Sensors | Source |
 |--------|---------|--------|
 | City and county | **USPL City** (or "Unincorporated" outside city limits) and **USPL County**, with the state as an attribute.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
-| Rules link | **USPL Rules Link**: a link to the managing office's own web page so you can read its rules: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other land links to a Recreation.gov search.  Nothing on private land. | Agency websites (no key) |
+| Rules link | **USPL Rules Link**: the name of the managing office, for example "Bishop Field Office".  Its `url` attribute links to that office's own web page so you can read its rules: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other land links to a Recreation.gov search.  On BLM land, `general_rules_url` links to BLM's camping rules.  Unknown on private land. | Agency websites (no key) |
 | Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds are within the search radius (5 to 25 miles, default 25), with the nearest ten as attributes (name, distance, reservable, stay limit, link). | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) |
 
 **Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
@@ -183,14 +183,14 @@ If you want to hide USPL sensors when they're unavailable (such as no Internet c
 
 If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Private Land' or 'Non-Protected Area'.
 
-To show the rules link as a clickable link, use a Markdown card:
+The rules link is clickable when you open **USPL Rules Link** (under Attributes).  To put it on a dashboard, use a Markdown card:
 
 ```yaml
 type: markdown
 content: >
-  {% set url = states('sensor.uspl_rules_link') %}
-  {% if url.startswith('http') %}
-  [{{ state_attr('sensor.uspl_rules_link', 'name') }} rules]({{ url }})
+  {% set url = state_attr('sensor.uspl_rules_link', 'url') %}
+  {% if url %}
+  [{{ states('sensor.uspl_rules_link') }} rules]({{ url }})
   {% endif %}
 ```
 

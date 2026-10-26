@@ -103,9 +103,11 @@ OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
         "uspl_rules_link",
         "Rules Link",
         "mdi:link-variant",
-        lambda d: d["url"],
+        # The office name is the state; the link is an attribute because
+        # Home Assistant shows attribute URLs as clickable links.
+        lambda d: d["name"],
         lambda d: {
-            "name": d["name"],
+            "url": d["url"],
             "agency": d["agency"],
             "general_rules_url": d["general_rules_url"],
         },

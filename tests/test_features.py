@@ -96,8 +96,10 @@ async def test_all_features_on(hass: HomeAssistant, aioclient_mock) -> None:
     assert county.attributes["state"] == "California"
 
     link = hass.states.get("sensor.uspl_rules_link")
-    assert link.state == "https://www.blm.gov/office/bishop-field-office"
-    assert link.attributes["name"] == "Bishop Field Office"
+    assert link.state == "Bishop Field Office"
+    assert link.attributes["url"] == "https://www.blm.gov/office/bishop-field-office"
+    assert link.attributes["agency"] == "Bureau of Land Management"
+    assert link.attributes["general_rules_url"] == "https://www.blm.gov/programs/recreation/camping"
 
     camps = hass.states.get("sensor.uspl_nearby_campgrounds")
     assert camps.state == "1"
