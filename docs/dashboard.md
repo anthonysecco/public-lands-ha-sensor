@@ -1,5 +1,7 @@
 # Dashboard Cards
 
+<img width="1074" height="545" alt="image" src="https://github.com/user-attachments/assets/f65718f7-50f1-4a70-b8f7-f53dc4eedb52" />
+
 [← Back to README](../README.md)
 
 ## Rules link card
