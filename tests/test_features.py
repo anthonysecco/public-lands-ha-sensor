@@ -129,7 +129,7 @@ async def test_rules_link_failure_does_not_fail_refresh(
 
 
 async def test_rules_link_sensor_from_v031_is_removed(hass: HomeAssistant) -> None:
-    """The USPL Rules Link sensor from v0.3.1/v0.3.2-beta is deleted on upgrade."""
+    """The USPL Rules Link sensor from earlier beta builds is deleted on upgrade."""
     entry = MockConfigEntry(domain=DOMAIN, data={}, options={"rules_link": True})
     entry.add_to_hass(hass)
     registry = er.async_get(hass)

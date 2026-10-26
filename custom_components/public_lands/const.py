@@ -20,7 +20,8 @@ MAX_SEARCH_RADIUS: Final = 25  # Recreation.gov's maximum, in miles
 
 FEATURE_CITY_COUNTY: Final = "city_county"
 
-# Removed in v0.3.3: the rules link moved to attributes on USPL Management Name.
+# Removed during v0.3.0 beta testing: the rules link moved to attributes on USPL
+# Management Name. Its old sensor is deleted from earlier test installs.
 REMOVED_UNIQUE_IDS: Final = ("uspl_rules_link",)
 FEATURE_CAMPGROUNDS: Final = "campgrounds"
 
