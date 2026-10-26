@@ -73,7 +73,7 @@ Everything works with the defaults.  To change a setting, go to **Settings > Dev
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Location entity | `zone.home` | Where the coordinates come from.  Pick any zone, device tracker, person, or sensor that has latitude and longitude, for example your van's GPS tracker. |
-| City and county sensors | Off | Adds **USPL City** and **USPL County**.  See [Optional Sensors](#optional-sensors). |
+| City, county and state sensors | Off | Adds **USPL City**, **USPL County** and **USPL State**.  See [Optional Sensors](#optional-sensors). |
 | Nearby campgrounds sensor | Off | Adds **USPL Nearby Campgrounds**.  Needs a Recreation.gov API key. |
 | Recreation.gov API key | Empty | Your own free key from [ridb.recreation.gov](https://ridb.recreation.gov/).  Only needed for nearby campgrounds. |
 | Campground search radius | 25 miles | How far to look for campgrounds: 5 to 25 miles (Recreation.gov's maximum). |
@@ -84,7 +84,7 @@ These are off by default.  Turn them on in [Configuration](#configuration).  The
 
 | Option | Sensors | Source |
 |--------|---------|--------|
-| City and county | **USPL City** (or "Unincorporated" outside city limits) and **USPL County**, with the state as an attribute.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
+| City, county and state | **USPL City** (or "Unincorporated" outside city limits), **USPL County** and **USPL State**.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
 | Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds are within the search radius (5 to 25 miles, default 25), with the nearest ten as attributes (name, distance, reservable, stay limit, link). | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) |
 
 **Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
@@ -234,7 +234,7 @@ At Alabama Hills it shows:
 >
 > 🏕️ [BLM Camping](https://www.blm.gov/programs/recreation/camping)
 
-The city and county line appears only when the [City and county](#optional-sensors) option is on.  "Unincorporated" means you're outside any city's limits.  On private land the card shows "No rules link for this location."
+The city and county line appears only when the [City, county and state](#optional-sensors) option is on.  "Unincorporated" means you're outside any city's limits.  On private land the card shows "No rules link for this location."
 
 ### Example Data
 

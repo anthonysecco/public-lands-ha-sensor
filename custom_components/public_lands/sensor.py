@@ -81,7 +81,7 @@ class OptionalSensorDefinition:
     name: str
     icon: str
     value: Callable[[dict[str, Any]], Any]
-    attributes: Callable[[dict[str, Any]], dict[str, Any]]
+    attributes: Callable[[dict[str, Any]], dict[str, Any] | None]
 
 
 OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
@@ -91,7 +91,7 @@ OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
         "City",
         "mdi:city",
         lambda d: d["city"],
-        lambda d: {"full_name": d["city_full_name"], "state": d["state"]},
+        lambda d: {"full_name": d["city_full_name"]},
     ),
     OptionalSensorDefinition(
         FEATURE_CITY_COUNTY,
@@ -99,7 +99,15 @@ OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
         "County",
         "mdi:map",
         lambda d: d["county"],
-        lambda d: {"state": d["state"]},
+        lambda d: None,
+    ),
+    OptionalSensorDefinition(
+        FEATURE_CITY_COUNTY,
+        "uspl_state",
+        "State",
+        "mdi:map-outline",
+        lambda d: d["state"],
+        lambda d: None,
     ),
     OptionalSensorDefinition(
         FEATURE_CAMPGROUNDS,

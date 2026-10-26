@@ -34,6 +34,7 @@ YOSEMITE = {
 OPTIONAL_ENTITIES = (
     "sensor.uspl_city",
     "sensor.uspl_county",
+    "sensor.uspl_state",
     "sensor.uspl_nearby_campgrounds",
 )
 ALL_ON = {
@@ -147,7 +148,8 @@ async def test_all_features_on(hass: HomeAssistant, aioclient_mock) -> None:
     assert hass.states.get("sensor.uspl_city").state == "Unincorporated"
     county = hass.states.get("sensor.uspl_county")
     assert county.state == "Inyo County"
-    assert county.attributes["state"] == "California"
+    assert "state" not in county.attributes
+    assert hass.states.get("sensor.uspl_state").state == "California"
 
     camps = hass.states.get("sensor.uspl_nearby_campgrounds")
     assert camps.state == "1"
@@ -188,6 +190,7 @@ async def test_switching_a_feature_off_removes_its_sensors(
 
     assert registry.async_get("sensor.uspl_city") is None
     assert registry.async_get("sensor.uspl_county") is None
+    assert registry.async_get("sensor.uspl_state") is None
     assert hass.states.get("sensor.uspl_city") is None
     # Core sensors survive the reload.
     assert hass.states.get("sensor.uspl_unit_name") is not None
