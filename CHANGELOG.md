@@ -20,7 +20,7 @@ Upgrading is safe.  Entity IDs, the refresh button and sensor values keep the sa
 
 **Optional sensors** (off by default, under Configure)
 - **USPL City, County and State** from the U.S. Census Bureau.
-- **USPL Nearby Campgrounds** from Recreation.gov, with your own free API key: campgrounds and dispersed-camping sites within 10 to 25 miles, the nearest ten with booking type, phone, Recreation.gov and directions links.  Campgrounds the Forest Service reports closed are hidden.
+- **USPL Nearby Campgrounds** from Recreation.gov, with your own free API key: campgrounds and dispersed-camping sites within 10 to 25 miles, the nearest ten with a short description, phone, booking type, Recreation.gov and directions links.  Campgrounds the Forest Service reports closed are hidden.
 
 **New settings and actions**
 - Choose the location entity (default `zone.home`).

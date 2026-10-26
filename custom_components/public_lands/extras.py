@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import html
 from math import asin, cos, radians, sin, sqrt
+import re
 from typing import Any
 
 import aiohttp
@@ -32,6 +34,31 @@ from .rules import (
 )
 
 UNINCORPORATED = "Unincorporated"
+DESCRIPTION_MAX_CHARS = 160
+
+_HTML_TAG = re.compile(r"<[^>]+>")
+_OVERVIEW_HEADING = re.compile(r"^overview\s*:?\s*", re.IGNORECASE)
+
+
+def short_description(text: Any, max_chars: int = DESCRIPTION_MAX_CHARS) -> str | None:
+    """Plain-text start of a Recreation.gov description.
+
+    Removes HTML and the leading "Overview" heading, then cuts at the last
+    sentence end within max_chars (or at a word, with an ellipsis).
+    """
+    if not text:
+        return None
+    plain = html.unescape(_HTML_TAG.sub(" ", str(text)))
+    plain = _OVERVIEW_HEADING.sub("", " ".join(plain.split()))
+    if not plain:
+        return None
+    if len(plain) <= max_chars:
+        return plain
+    cut = plain[:max_chars]
+    sentence_end = cut.rfind(". ")
+    if sentence_end > 60:
+        return cut[: sentence_end + 1]
+    return cut.rsplit(" ", 1)[0].rstrip(",;:") + "…"
 
 STATE_FIPS: dict[str, str] = {
     "01": "Alabama", "02": "Alaska", "04": "Arizona", "05": "Arkansas",
@@ -251,6 +278,7 @@ async def async_campgrounds(
                 "dispersed": dispersed,
                 "stay_limit": fac.get("StayLimit") or None,
                 "phone": fac.get("FacilityPhone") or None,
+                "description": short_description(fac.get("FacilityDescription")),
                 "url": f"https://www.recreation.gov/camping/campgrounds/{fac.get('FacilityID')}",
                 "directions_url": (
                     f"https://www.google.com/maps/dir/?api=1&destination={flat},{flon}"

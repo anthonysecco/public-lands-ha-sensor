@@ -20,6 +20,7 @@ from custom_components.public_lands.extras import (
     async_campgrounds,
     async_city_county,
     async_rules_link,
+    short_description,
 )
 from custom_components.public_lands.rules import (
     blm_office_url,
@@ -162,7 +163,15 @@ def _fs_site(lat: float, lon: float, status: str) -> dict:
 NEARBY_FACILITIES = [
     _facility("10004620", "Tuttle Creek Campground", 36.565, -118.127, StayLimit="14 days"),
     _facility(
-        "232069", "LONE PINE", 36.5976111, -118.1848056, FacilityPhone="760-937-6070"
+        "232069",
+        "LONE PINE",
+        36.5976111,
+        -118.1848056,
+        FacilityPhone="760-937-6070",
+        FacilityDescription=(
+            "<h2>Overview</h2><p>Lone Pine Campground is located near the base of "
+            "Mt. Whitney.</p>"
+        ),
     ),
     _facility(
         "232123", "WHITNEY PORTAL", 36.5898611, -118.2297778, FacilityPhone="760-937-6070"
@@ -207,6 +216,10 @@ async def test_campgrounds(hass: HomeAssistant, aioclient_mock) -> None:
     assert tuttle["phone"] is None
     assert tuttle["url"] == "https://www.recreation.gov/camping/campgrounds/10004620"
     assert lone_pine["phone"] == "760-937-6070"
+    assert lone_pine["description"] == (
+        "Lone Pine Campground is located near the base of Mt. Whitney."
+    )
+    assert tuttle["description"] is None
     assert lone_pine["directions_url"] == (
         "https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056"
     )
@@ -249,3 +262,35 @@ async def test_campgrounds_bad_key(hass: HomeAssistant, aioclient_mock) -> None:
     with pytest.raises(InvalidApiKey):
         await async_campgrounds(async_get_clientsession(hass), "bad", 36.6, -118.13, 25)
     assert aioclient_mock.call_count == 1  # no retry on a rejected key
+
+
+# Descriptions as Recreation.gov sends them (HTML, starting with an "Overview" heading).
+TUTTLE_CREEK_HTML = (
+    "<h2>Overview</h2><p>$12.00 per site per night. No reservations. Open all year. "
+    "Tuttle Creek Campground offers 81 RV/tent sites, with ten pull-through trailer "
+    "spaces, maximum recommended RV length is 30 feet.</p>"
+)
+
+
+def test_short_description_cuts_long_text_at_a_word() -> None:
+    text = short_description(TUTTLE_CREEK_HTML)
+    assert text.startswith("$12.00 per site per night. No reservations. Open all year.")
+    assert text.endswith("…")
+    assert len(text) <= 161
+    assert "<" not in text
+
+
+def test_short_description_prefers_a_sentence_end() -> None:
+    first = "This first sentence is long enough to be worth keeping on its own here."
+    rest = " The second sentence keeps going well past the limit " + "and on " * 20
+    assert short_description(f"<p>{first}{rest}</p>") == first
+
+
+def test_short_description_cleans_html() -> None:
+    assert short_description("<p>Lake &amp;\n  Creek   views</p>") == "Lake & Creek views"
+    assert short_description("OVERVIEW: Quiet sites.") == "Quiet sites."
+
+
+@pytest.mark.parametrize("empty", [None, "", "<p> </p>"])
+def test_short_description_empty(empty) -> None:
+    assert short_description(empty) is None

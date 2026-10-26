@@ -49,7 +49,7 @@ The city, county and state line appears only when the city, county and state opt
 
 ## Nearby campgrounds card
 
-Needs the nearby campgrounds option.  Lists the nearest campgrounds with links to Recreation.gov (to check availability and book) and to directions:
+Needs the nearby campgrounds option.  A table of the nearest campgrounds, with a short description of each below it.  Tap a name to open its Recreation.gov page (to check availability and book), or tap the miles for directions:
 
 ```yaml
 type: markdown
@@ -62,12 +62,17 @@ content: |
   {% if total > camps | count %}
   *Showing the nearest {{ camps | count }}*
   {% endif %}
-  {% for c in camps %}
+  {% if camps %}
+  | Campground | Miles | Phone |
+  |:---|---:|:---|
+  {%- for c in camps %}
+  | [{{ c.name }}]({{ c.url }}) | [{{ c.distance_mi }}]({{ c.directions_url }}) | {{ c.phone or '—' }} |
+  {%- endfor %}
+  {% for c in camps if c.description %}
 
-  **[{{ c.name }}]({{ c.url }})** · {{ c.distance_mi }} mi · {{ c.booking }}<br>
-  🧭 [Directions]({{ c.directions_url }}){% if c.phone %} · 📞 {{ c.phone }}{% endif %}
-  {% endfor %}
-  {% if total == 0 %}
+  **{{ c.name }}:** {{ c.description }}
+  {%- endfor %}
+  {% else %}
   No Recreation.gov campgrounds nearby.
   {% endif %}
   {% if hidden %}
@@ -78,18 +83,21 @@ content: |
   *Data: ridb.recreation.gov*
 ```
 
-Near Alabama Hills in late October it shows:
+The `{%-` markers keep the table rows together; without them the table breaks apart.  From Lone Pine, CA in late October it shows:
 
 > ### ⛺ 3 campgrounds within 25 miles
 >
-> **[Tuttle Creek Campground](https://www.recreation.gov/camping/campgrounds/10004620)** · 2.4 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.565,-118.127)
+> | Campground | Miles | Phone |
+> |:---|---:|:---|
+> | [Tuttle Creek Campground](https://www.recreation.gov/camping/campgrounds/10004620) | [4.6](https://www.google.com/maps/dir/?api=1&destination=36.565,-118.127) | — |
+> | [Lone Pine](https://www.recreation.gov/camping/campgrounds/232069) | [6.8](https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056) | 760-937-6070 |
+> | [Grays Meadows](https://www.recreation.gov/camping/campgrounds/232052) | [17.1](https://www.google.com/maps/dir/?api=1&destination=36.7688889,-118.295) | 760-937-6070 |
 >
-> **[Lone Pine](https://www.recreation.gov/camping/campgrounds/232069)** · 3 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056) · 📞 760-937-6070
+> **Tuttle Creek Campground:** $12.00 per site per night. No reservations. Open all year. Tuttle Creek Campground offers 81 RV/tent sites, with ten pull-through trailer spaces…
 >
-> **[Grays Meadows](https://www.recreation.gov/camping/campgrounds/232052)** · 14.8 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.7688889,-118.295) · 📞 760-937-6070
+> **Lone Pine:** Lone Pine Campground is located near the base of Mt. Whitney, the highest peak in the continental United States, offering unparalleled views of the mountain…
+>
+> **Grays Meadows:** Grays Meadows Campground is situated along Independence Creek in the Onion Valley area of the eastern Sierra Nevada Mountains.
 >
 > *2 closed for the season hidden*
 >

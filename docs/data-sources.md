@@ -33,6 +33,6 @@ A weekly GitHub check confirms these services and links still work.
 
 - **Federal campgrounds only:** mainly Forest Service, BLM, National Park Service and Army Corps.  State and county parks, such as most Bay Area campgrounds, aren't included.
 - **No availability:** the API doesn't offer tonight's availability, and Recreation.gov's terms don't allow collecting it from the website.  Tap a campground's name to check on Recreation.gov.
-- **No fees:** the fee field is empty for most campgrounds, so fees aren't shown.
+- **No fees:** the fee field is empty for most campgrounds.  Some descriptions mention the fee, for example Tuttle Creek's "$12.00 per site per night".
 - **Closures:** only the Forest Service publishes open/closed status.  Other agencies' campgrounds always show.
 - **Limits:** one request per refresh; Recreation.gov allows 50 requests per second.
