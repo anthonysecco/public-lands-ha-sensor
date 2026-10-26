@@ -81,6 +81,28 @@ def polygon_rings(geom) -> list:
     return rings
 
 
+CLIP_STATS = {"fallback": 0, "failed": 0}
+
+
+def clip(geom, cell_box, cx: int, cy: int):
+    """Cut geom to one grid cell. Falls back to a general intersection (and then
+    to a cleaned-up geometry) for the few shapes the fast clip rejects."""
+    try:
+        return shapely.clip_by_rect(geom, cx * CELL, cy * CELL, (cx + 1) * CELL, (cy + 1) * CELL)
+    except shapely.errors.GEOSException:
+        CLIP_STATS["fallback"] += 1
+    try:
+        return shapely.intersection(geom, cell_box)
+    except shapely.errors.GEOSException:
+        pass
+    try:
+        fixed = shapely.make_valid(shapely.set_precision(geom, 1e-6))
+        return shapely.intersection(fixed, cell_box)
+    except shapely.errors.GEOSException:
+        CLIP_STATS["failed"] += 1
+        return None
+
+
 def cells_and_pieces(geom):
     """Yield (cell_id, blob or None for a full cell)."""
     minx, miny, maxx, maxy = geom.bounds
@@ -102,8 +124,8 @@ def cells_and_pieces(geom):
         if full[i]:
             yield pack2.cell_id(cx, cy), None
             continue
-        piece = shapely.clip_by_rect(geom, cx * CELL, cy * CELL, (cx + 1) * CELL, (cy + 1) * CELL)
-        rings = polygon_rings(piece) if not piece.is_empty else []
+        piece = clip(geom, boxes[i], cx, cy)
+        rings = polygon_rings(piece) if piece is not None and not piece.is_empty else []
         if rings:
             yield pack2.cell_id(cx, cy), pack2.encode(rings)[0]
 
@@ -185,6 +207,8 @@ def build_national(raw: Path, db: Path) -> dict:
     conn.execute("VACUUM")
     conn.close()
     stats["build_minutes"] = round((time.time() - t0) / 60, 1)
+    stats["clip_fallback"] = CLIP_STATS["fallback"]
+    stats["clip_failed"] = CLIP_STATS["failed"]
     return stats
 
 
