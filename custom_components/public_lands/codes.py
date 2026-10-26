@@ -123,8 +123,7 @@ DESIGNATION_TYPE: dict[str, str] = {
     "PCON": "Private Conservation",
     "PPRK": "Private Park",
     "PREC": "Private Recreation or Education",
-    "PHCA": "Private Historic or Cultural 
-",
+    "PHCA": "Private Historic or Cultural",
     "PAGR": "Private Agricultural",
     "PRAN": "Private Ranch",
     "PFOR": "Private Forest Stewardship",

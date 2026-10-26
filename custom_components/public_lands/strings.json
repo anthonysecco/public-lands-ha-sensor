@@ -1,5 +1,11 @@
 {
   "config": {
+    "step": {
+      "user": {
+        "title": "Public Lands",
+        "description": "Identify the public land at your location."
+      }
+    },
     "abort": {
       "single_instance_allowed": "Public Lands is already set up."
     }
