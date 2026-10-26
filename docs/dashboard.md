@@ -1,12 +1,37 @@
 # Dashboard Cards
 
-<img width="1074" height="545" alt="image" src="https://github.com/user-attachments/assets/f65718f7-50f1-4a70-b8f7-f53dc4eedb52" />
-
 [← Back to README](../README.md)
 
 ## Rules link card
 
 Shows where you are and links to the managing office's rules page, plus BLM's camping page on BLM land.  Add a **Markdown** card and paste this into its code editor:
+
+```yaml
+type: markdown
+content: |
+  {% set manager = 'sensor.uspl_management_name' %}
+  {% set rules_url = state_attr(manager, 'rules_url') %}
+  {% set general_url = state_attr(manager, 'general_rules_url') %}
+  {% set county = states('sensor.uspl_county') %}
+  {% if county not in ['unknown', 'unavailable'] %}
+  {{ states('sensor.uspl_city') }} · {{ county }} · {{ states('sensor.uspl_state') }}
+  {% endif %}
+  ### {{ states('sensor.uspl_unit_name') }}
+
+  {{ states('sensor.uspl_designation') }} · {{ states(manager) }}
+
+  Access: {{ states('sensor.uspl_public_access') }}
+
+  {% if rules_url %}
+  📜 [{{ state_attr(manager, 'rules_office') }}]({{ rules_url }})
+  {% if general_url %}
+
+  🏕️ [BLM Camping]({{ general_url }})
+  {% endif %}
+  {% else %}
+  No rules link for this location.
+  {% endif %}
+```
 
 At Alabama Hills it shows:
 
@@ -29,6 +54,38 @@ Needs the nearby campgrounds option.  A table of the nearest campgrounds, with a
 - **Reservable campgrounds** open their Recreation.gov page, to check availability and book.
 - **First-come Forest Service campgrounds** open their Forest Service page, which shows whether the site is open.
 - **Other campgrounds** open the Recreation.gov page for their area, such as the national forest.
+
+```yaml
+type: markdown
+content: |
+  {% set s = 'sensor.uspl_nearby_campgrounds' %}
+  {% set camps = state_attr(s, 'campgrounds') or [] %}
+  {% set total = states(s) | int(0) %}
+  {% set hidden = state_attr(s, 'closed_hidden') | int(0) %}
+  ### ⛺ {{ total }} campground{{ '' if total == 1 else 's' }} within {{ state_attr(s, 'radius_mi') | int(25) }} miles
+  {% if total > camps | count %}
+  *Showing the nearest {{ camps | count }}*
+  {% endif %}
+  {% if camps %}
+  | Campground | Miles | Phone |
+  |:---|---:|:---|
+  {%- for c in camps %}
+  | {% if c.url %}[{{ c.name }}]({{ c.url }}){% else %}{{ c.name }}{% endif %} | [{{ c.distance_mi }}]({{ c.directions_url }}) | {{ c.phone or '—' }} |
+  {%- endfor %}
+  {% for c in camps if c.description %}
+
+  **{{ c.name }}:** {{ c.description }}
+  {%- endfor %}
+  {% else %}
+  No Recreation.gov campgrounds nearby.
+  {% endif %}
+  {% if hidden %}
+
+  *{{ hidden }} closed for the season hidden*
+  {% endif %}
+
+  *Data: ridb.recreation.gov*
+```
 
 The `{%-` markers keep the table rows together; without them the table breaks apart.  From Lone Pine, CA in late October it shows:
 
