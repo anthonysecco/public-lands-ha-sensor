@@ -1,7 +1,11 @@
 ![icon](https://github.com/user-attachments/assets/de5ad0b3-8f84-4b37-a003-0a3bd3b0b2b2)
 
 # Public Lands
-![Home Assistant](https://img.shields.io/badge/Home%20Assistant-compatible-blue)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories/)
+[![GitHub release](https://img.shields.io/github/v/release/anthonysecco/public-lands-ha-sensor)](https://github.com/anthonysecco/public-lands-ha-sensor/releases)
+[![Validate](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/validate.yml/badge.svg)](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/validate.yml)
+[![Tests](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/tests.yml/badge.svg)](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/tests.yml)
+[![Link check](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/links.yml/badge.svg)](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/links.yml)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/anthonysecco)
 
 This is a HACS custom integration that looks up the land at your current GPS location in Home Assistant and tells you who manages it.
