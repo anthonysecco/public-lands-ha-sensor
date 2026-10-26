@@ -205,10 +205,6 @@ Ideas being considered for later versions:
 
 - **Camping guidance** - a sensor summarizing whether dispersed camping is generally allowed for the land you are on.
 - **Red Flag Warnings** - National Weather Service fire weather warnings for your location.
-- **Nearest rest area** - the closest highway rest area from OpenStreetMap.
-- **Nearby services** - drinking water, dump stations and showers near you from OpenStreetMap.
-
-The OpenStreetMap ideas need caching first: the public OpenStreetMap servers took about 40 seconds per search in testing.
 
 ## 💖 Support
 
