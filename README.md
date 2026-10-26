@@ -196,6 +196,7 @@ Ideas being considered for later versions:
 - **City and county** - which city limits and county you are in, from the Census Bureau, to help with local overnight-parking rules.
 - **Nearest rest area** - the closest highway rest area from OpenStreetMap, with a note on that state's overnight parking rules.
 - **Nearby services** - drinking water, dump stations and showers near you from OpenStreetMap.
+- **Official rules link** - a link to the managing office's own web page (BLM field office, National Park, National Forest or Wildlife Refuge) so you can read its camping rules.
 
 ## 💖 Support
 
