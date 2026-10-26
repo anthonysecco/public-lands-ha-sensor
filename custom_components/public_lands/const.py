@@ -11,7 +11,6 @@ DEFAULT_LOCATION_ENTITY: Final = "zone.home"
 
 # Optional features (all off by default).
 CONF_CITY_COUNTY: Final = "city_county"
-CONF_RULES_LINK: Final = "rules_link"
 CONF_CAMPGROUNDS: Final = "campgrounds"
 CONF_RIDB_API_KEY: Final = "ridb_api_key"
 CONF_SEARCH_RADIUS: Final = "search_radius"
@@ -20,7 +19,9 @@ MIN_SEARCH_RADIUS: Final = 5
 MAX_SEARCH_RADIUS: Final = 25  # Recreation.gov's maximum, in miles
 
 FEATURE_CITY_COUNTY: Final = "city_county"
-FEATURE_RULES_LINK: Final = "rules_link"
+
+# Removed in v0.3.3: the rules link moved to attributes on USPL Management Name.
+REMOVED_UNIQUE_IDS: Final = ("uspl_rules_link",)
 FEATURE_CAMPGROUNDS: Final = "campgrounds"
 
 # Census Bureau TIGERweb: layer 28 = Incorporated Places, 82 = Counties.

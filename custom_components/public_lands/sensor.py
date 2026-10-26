@@ -25,7 +25,7 @@ from .const import (
     DOMAIN,
     FEATURE_CAMPGROUNDS,
     FEATURE_CITY_COUNTY,
-    FEATURE_RULES_LINK,
+    REMOVED_UNIQUE_IDS,
 )
 from .coordinator import STATUS_OK, PublicLandsCoordinator
 from .entity import PublicLandsEntity
@@ -58,6 +58,9 @@ async def async_setup_entry(
     # Optional sensors exist only while their feature is switched on. Switching a
     # feature off removes its sensor instead of leaving it unavailable.
     registry = er.async_get(hass)
+    for unique_id in REMOVED_UNIQUE_IDS:
+        if entity_id := registry.async_get_entity_id(SENSOR_DOMAIN, DOMAIN, unique_id):
+            registry.async_remove(entity_id)
     for definition in OPTIONAL_SENSORS:
         if coordinator.feature_enabled(definition.feature):
             entities.append(OptionalSensor(coordinator, definition))
@@ -97,20 +100,6 @@ OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
         "mdi:map",
         lambda d: d["county"],
         lambda d: {"state": d["state"]},
-    ),
-    OptionalSensorDefinition(
-        FEATURE_RULES_LINK,
-        "uspl_rules_link",
-        "Rules Link",
-        "mdi:link-variant",
-        # The office name is the state; the link is an attribute because
-        # Home Assistant shows attribute URLs as clickable links.
-        lambda d: d["name"],
-        lambda d: {
-            "url": d["url"],
-            "agency": d["agency"],
-            "general_rules_url": d["general_rules_url"],
-        },
     ),
     OptionalSensorDefinition(
         FEATURE_CAMPGROUNDS,
@@ -181,7 +170,19 @@ class PublicLandsSensor(PublicLandsEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         data = self.coordinator.data
-        if self._field != "unit_name" or not data:
+        if not data:
+            return None
+        if self._field == "management_name":
+            # Link to the managing office's own rules page. Home Assistant shows
+            # attribute URLs as clickable links.
+            if not (link := data.get("rules_link")):
+                return None
+            return {
+                "rules_office": link.get("name"),
+                "rules_url": link.get("url"),
+                "general_rules_url": link.get("general_rules_url"),
+            }
+        if self._field != "unit_name":
             return None
         return {
             "source": data.get("source"),

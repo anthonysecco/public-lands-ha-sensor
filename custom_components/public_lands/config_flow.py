@@ -33,7 +33,6 @@ from .const import (
     CONF_CITY_COUNTY,
     CONF_LOCATION_ENTITY,
     CONF_RIDB_API_KEY,
-    CONF_RULES_LINK,
     CONF_SEARCH_RADIUS,
     DEFAULT_LOCATION_ENTITY,
     DEFAULT_SEARCH_RADIUS,
@@ -123,9 +122,6 @@ def _schema(current: dict[str, Any]) -> vol.Schema:
             ): EntitySelector(EntitySelectorConfig(domain=LOCATION_DOMAINS)),
             vol.Required(
                 CONF_CITY_COUNTY, default=bool(current.get(CONF_CITY_COUNTY))
-            ): BooleanSelector(),
-            vol.Required(
-                CONF_RULES_LINK, default=bool(current.get(CONF_RULES_LINK))
             ): BooleanSelector(),
             vol.Required(
                 CONF_CAMPGROUNDS, default=bool(current.get(CONF_CAMPGROUNDS))

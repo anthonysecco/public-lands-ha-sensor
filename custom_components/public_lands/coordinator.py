@@ -21,14 +21,12 @@ from .const import (
     CONF_CITY_COUNTY,
     CONF_LOCATION_ENTITY,
     CONF_RIDB_API_KEY,
-    CONF_RULES_LINK,
     CONF_SEARCH_RADIUS,
     DEFAULT_LOCATION_ENTITY,
     DEFAULT_SEARCH_RADIUS,
     DOMAIN,
     FEATURE_CAMPGROUNDS,
     FEATURE_CITY_COUNTY,
-    FEATURE_RULES_LINK,
     STORAGE_KEY,
     STORAGE_VERSION,
 )
@@ -90,10 +88,7 @@ class PublicLandsCoordinator(DataUpdateCoordinator[dict[str, Any] | None]):
                 self.entry.options.get(CONF_CAMPGROUNDS)
                 and self.entry.options.get(CONF_RIDB_API_KEY)
             )
-        option = {
-            FEATURE_CITY_COUNTY: CONF_CITY_COUNTY,
-            FEATURE_RULES_LINK: CONF_RULES_LINK,
-        }[feature]
+        option = {FEATURE_CITY_COUNTY: CONF_CITY_COUNTY}[feature]
         return bool(self.entry.options.get(option))
 
     async def async_lookup(self, latitude: float, longitude: float) -> dict[str, Any]:
@@ -106,15 +101,16 @@ class PublicLandsCoordinator(DataUpdateCoordinator[dict[str, Any] | None]):
         lat, lon = result["latitude"], result["longitude"]
         session = async_get_clientsession(self.hass)
         options = self.entry.options
-        extras: dict[str, Any] = {}
+        # Link to the managing office's rules page, shown as attributes on
+        # USPL Management Name. A failure here never fails the refresh.
+        result["rules_link"] = await self._optional(
+            "rules link", async_rules_link(session, lat, lon, result)
+        )
 
+        extras: dict[str, Any] = {}
         if self.feature_enabled(FEATURE_CITY_COUNTY):
             extras[FEATURE_CITY_COUNTY] = await self._optional(
                 FEATURE_CITY_COUNTY, async_city_county(session, lat, lon)
-            )
-        if self.feature_enabled(FEATURE_RULES_LINK):
-            extras[FEATURE_RULES_LINK] = await self._optional(
-                FEATURE_RULES_LINK, async_rules_link(session, lat, lon, result)
             )
         if self.feature_enabled(FEATURE_CAMPGROUNDS):
             radius = float(options.get(CONF_SEARCH_RADIUS) or DEFAULT_SEARCH_RADIUS)

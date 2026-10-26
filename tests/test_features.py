@@ -13,24 +13,32 @@ from custom_components.public_lands.const import (
     CONF_CITY_COUNTY,
     CONF_LOCATION_ENTITY,
     CONF_RIDB_API_KEY,
-    CONF_RULES_LINK,
     CONF_SEARCH_RADIUS,
     DOMAIN,
+    NPS_BOUNDARY_URL,
     RIDB_FACILITIES_URL,
 )
 
 from .conftest import ALABAMA_HILLS, BLM_FEE, PADUS_QUERY_URL, features
 
+YOSEMITE = {
+    "FeatClass": "Fee",
+    "Unit_Nm": "Yosemite National Park",
+    "Pub_Access": "OA",
+    "Mang_Type": "FED",
+    "Mang_Name": "NPS",
+    "Des_Tp": "NP",
+    "GIS_Acres": 742953,
+}
+
 OPTIONAL_ENTITIES = (
     "sensor.uspl_city",
     "sensor.uspl_county",
-    "sensor.uspl_rules_link",
     "sensor.uspl_nearby_campgrounds",
 )
 ALL_ON = {
     CONF_LOCATION_ENTITY: "zone.home",
     CONF_CITY_COUNTY: True,
-    CONF_RULES_LINK: True,
     CONF_CAMPGROUNDS: True,
     CONF_RIDB_API_KEY: "key",
     CONF_SEARCH_RADIUS: 25,
@@ -82,7 +90,53 @@ async def test_upgrade_adds_no_new_sensors(hass: HomeAssistant, aioclient_mock) 
     await _press(hass)
     for entity_id in OPTIONAL_ENTITIES:
         assert hass.states.get(entity_id) is None
-    assert aioclient_mock.call_count == 1  # PAD-US only
+    assert aioclient_mock.call_count == 1  # PAD-US only (the BLM rules link needs no request)
+
+
+async def test_rules_link_on_management_name(hass: HomeAssistant, aioclient_mock) -> None:
+    """Always on, no switch. BLM links need no extra request."""
+    _mock_all(aioclient_mock)
+    await _setup(hass)
+    await _press(hass)
+
+    manager = hass.states.get("sensor.uspl_management_name")
+    assert manager.state == "Bureau of Land Management"
+    assert manager.attributes["rules_office"] == "Bishop Field Office"
+    assert manager.attributes["rules_url"] == "https://www.blm.gov/office/bishop-field-office"
+    assert (
+        manager.attributes["general_rules_url"]
+        == "https://www.blm.gov/programs/recreation/camping"
+    )
+    assert hass.states.get("sensor.uspl_rules_link") is None
+    assert aioclient_mock.call_count == 1
+
+
+async def test_rules_link_failure_does_not_fail_refresh(
+    hass: HomeAssistant, aioclient_mock
+) -> None:
+    aioclient_mock.get(PADUS_QUERY_URL, json=features(YOSEMITE))
+    aioclient_mock.get(NPS_BOUNDARY_URL, status=500)
+    await _setup(hass)
+    await _press(hass)
+
+    assert hass.states.get("sensor.uspl_api_status").state == "on"
+    manager = hass.states.get("sensor.uspl_management_name")
+    assert manager.state == "National Park Service"
+    assert "rules_url" not in manager.attributes
+
+
+async def test_rules_link_sensor_from_v031_is_removed(hass: HomeAssistant) -> None:
+    """The USPL Rules Link sensor from v0.3.1/v0.3.2-beta is deleted on upgrade."""
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"rules_link": True})
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        "sensor", DOMAIN, "uspl_rules_link", config_entry=entry, suggested_object_id="uspl_rules_link"
+    )
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert registry.async_get("sensor.uspl_rules_link") is None
+    assert hass.states.get("sensor.uspl_rules_link") is None
 
 
 async def test_all_features_on(hass: HomeAssistant, aioclient_mock) -> None:
@@ -94,12 +148,6 @@ async def test_all_features_on(hass: HomeAssistant, aioclient_mock) -> None:
     county = hass.states.get("sensor.uspl_county")
     assert county.state == "Inyo County"
     assert county.attributes["state"] == "California"
-
-    link = hass.states.get("sensor.uspl_rules_link")
-    assert link.state == "Bishop Field Office"
-    assert link.attributes["url"] == "https://www.blm.gov/office/bishop-field-office"
-    assert link.attributes["agency"] == "Bureau of Land Management"
-    assert link.attributes["general_rules_url"] == "https://www.blm.gov/programs/recreation/camping"
 
     camps = hass.states.get("sensor.uspl_nearby_campgrounds")
     assert camps.state == "1"

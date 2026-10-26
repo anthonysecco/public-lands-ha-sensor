@@ -15,7 +15,7 @@ It uses two official, free sources (no API key needed):
 - **USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services)** ([Manager Name layer](https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Manager_Name_PADUS/FeatureServer/0)) covers almost any protected or public land in the United States, including federal, state, county, and regional lands.
 - **BLM [Surface Management Agency](https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1)** map is used when PAD-US has no record. It tells you when you are on private land and fills small gaps in PAD-US, such as road corridors inside a park.
 
-[Optional sensors](#optional-sensors) add city and county (U.S. Census Bureau), a link to the land manager's rules page, and nearby campgrounds (Recreation.gov, with your own free API key).
+The Management Name sensor also links to the managing office's own rules page.  [Optional sensors](#optional-sensors) add city and county (U.S. Census Bureau) and nearby campgrounds (Recreation.gov, with your own free API key).
 
 This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
 
@@ -59,7 +59,7 @@ Upgrading is safe.  Entity IDs, the refresh button, and sensor values keep the s
 
 - Private land now shows **Private Land** instead of blank sensors.
 - Sensors keep their last values after a Home Assistant restart.
-- The Unit Name sensor has new attributes (see [Sensors](#sensors)).
+- The Unit Name sensor has new attributes, and Management Name links to the managing office's rules page (see [Sensors](#sensors)).
 - [Optional sensors](#optional-sensors) are off, so no new entities appear until you turn them on.
 
 ## Usage
@@ -74,7 +74,6 @@ Everything works with the defaults.  To change a setting, go to **Settings > Dev
 |---------|---------|-------------|
 | Location entity | `zone.home` | Where the coordinates come from.  Pick any zone, device tracker, person, or sensor that has latitude and longitude, for example your van's GPS tracker. |
 | City and county sensors | Off | Adds **USPL City** and **USPL County**.  See [Optional Sensors](#optional-sensors). |
-| Rules link sensor | Off | Adds **USPL Rules Link**. |
 | Nearby campgrounds sensor | Off | Adds **USPL Nearby Campgrounds**.  Needs a Recreation.gov API key. |
 | Recreation.gov API key | Empty | Your own free key from [ridb.recreation.gov](https://ridb.recreation.gov/).  Only needed for nearby campgrounds. |
 | Campground search radius | 25 miles | How far to look for campgrounds: 5 to 25 miles (Recreation.gov's maximum). |
@@ -86,7 +85,6 @@ These are off by default.  Turn them on in [Configuration](#configuration).  The
 | Option | Sensors | Source |
 |--------|---------|--------|
 | City and county | **USPL City** (or "Unincorporated" outside city limits) and **USPL County**, with the state as an attribute.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
-| Rules link | **USPL Rules Link**: the name of the managing office, for example "Bishop Field Office".  Its `url` attribute links to that office's own web page so you can read its rules: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other land links to a Recreation.gov search.  On BLM land, `general_rules_url` links to BLM's camping rules.  Unknown on private land. | Agency websites (no key) |
 | Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds are within the search radius (5 to 25 miles, default 25), with the nearest ten as attributes (name, distance, reservable, stay limit, link). | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) |
 
 **Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
@@ -149,6 +147,16 @@ The **Unit Name** sensor also has these attributes:
 | latitude / longitude | The coordinates that were looked up. |
 | location_entity | The entity the coordinates came from. |
 
+The **Management Name** sensor has a link to the managing office's own web page, so you can read its rules.  Home Assistant shows these links as clickable when you open the sensor.
+
+| Attribute | Description |
+|-----------|-------------|
+| rules_office | The office the link is for, for example "Bishop Field Office" at Alabama Hills. |
+| rules_url | That office's page: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other public land links to a Recreation.gov search. |
+| general_rules_url | BLM's general camping rules page (on BLM land only). |
+
+These attributes are left out on private land.  National Park and National Forest links take one extra lookup per refresh; if it fails, the attributes are left out and the other sensors still update.
+
 These sensors will not populate with data until the Refresh USPL button is pressed for the first time.  After that, they keep their last values across restarts.
 
 #### No Internet Connection Scenario
@@ -175,7 +183,7 @@ data:
 response_variable: land
 ```
 
-The response has the same values as the sensors.  Any optional sensors that are turned on are included under `extras` (`city_county`, `rules_link`, `campgrounds`).
+The response has the same values as the sensors, plus the rules link under `rules_link`.  Any optional sensors that are turned on are included under `extras` (`city_county`, `campgrounds`).
 
 ### Dashboard Visibility Recommendations
 
@@ -183,14 +191,14 @@ If you want to hide USPL sensors when they're unavailable (such as no Internet c
 
 If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Private Land' or 'Non-Protected Area'.
 
-The rules link is clickable when you open **USPL Rules Link** (under Attributes).  To put it on a dashboard, use a Markdown card:
+The rules link is clickable when you open **USPL Management Name** (under Attributes).  To put it on a dashboard, use a Markdown card:
 
 ```yaml
 type: markdown
 content: >
-  {% set url = state_attr('sensor.uspl_rules_link', 'url') %}
+  {% set url = state_attr('sensor.uspl_management_name', 'rules_url') %}
   {% if url %}
-  [{{ states('sensor.uspl_rules_link') }} rules]({{ url }})
+  [{{ state_attr('sensor.uspl_management_name', 'rules_office') }} rules]({{ url }})
   {% endif %}
 ```
 

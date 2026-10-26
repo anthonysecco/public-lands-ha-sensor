@@ -18,7 +18,6 @@
         "data": {
           "location_entity": "Location entity",
           "city_county": "City and county sensors",
-          "rules_link": "Rules link sensor",
           "campgrounds": "Nearby campgrounds sensor (Recreation.gov)",
           "ridb_api_key": "Recreation.gov API key",
           "search_radius": "Campground search radius"
@@ -26,7 +25,6 @@
         "data_description": {
           "location_entity": "A zone, device tracker, person or sensor with latitude and longitude. The default is zone.home.",
           "city_county": "Adds USPL City and USPL County from the U.S. Census Bureau. Useful for city overnight-parking rules.",
-          "rules_link": "Adds USPL Rules Link: the managing office's name (BLM field office, National Park, National Forest or Wildlife Refuge), with a link to its own web page so you can read its rules.",
           "campgrounds": "Adds USPL Nearby Campgrounds from Recreation.gov. Needs your own free API key.",
           "ridb_api_key": "Get a free key by signing up at ridb.recreation.gov. Your key stays on your Home Assistant.",
           "search_radius": "How far to look for campgrounds, in miles (Recreation.gov allows up to 25)."
@@ -43,7 +41,7 @@
   "services": {
     "lookup": {
       "name": "Look up a location",
-      "description": "Looks up the public land at a coordinate and returns the result without changing the sensors. Leave the coordinates empty to use the current location. Optional features that are switched on are included.",
+      "description": "Looks up the public land at a coordinate and returns the result without changing the sensors. Leave the coordinates empty to use the current location. The rules link and any optional features that are switched on are included.",
       "fields": {
         "latitude": {
           "name": "Latitude",

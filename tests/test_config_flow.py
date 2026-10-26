@@ -12,7 +12,6 @@ from custom_components.public_lands.const import (
     CONF_CITY_COUNTY,
     CONF_LOCATION_ENTITY,
     CONF_RIDB_API_KEY,
-    CONF_RULES_LINK,
     CONF_SEARCH_RADIUS,
     DOMAIN,
     RIDB_FACILITIES_URL,
@@ -56,7 +55,6 @@ async def test_options_defaults_are_off(hass: HomeAssistant) -> None:
     assert entry.options == {
         CONF_LOCATION_ENTITY: "zone.home",
         CONF_CITY_COUNTY: False,
-        CONF_RULES_LINK: False,
         CONF_CAMPGROUNDS: False,
         CONF_SEARCH_RADIUS: 25,
     }
