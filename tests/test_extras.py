@@ -24,6 +24,8 @@ from custom_components.public_lands.extras import (
 )
 from custom_components.public_lands.rules import (
     blm_office_url,
+    forest_campground_url,
+    forest_from_legacy_link,
     forest_url,
     fws_refuge_url,
     nps_unit_url,
@@ -183,6 +185,7 @@ NEARBY_FACILITIES = [
         -118.05,
         FacilityTypeDescription="Facility",
         Reservable=False,
+        ParentRecAreaID="607",
         ACTIVITY=[{"ActivityName": "CAMPING"}, {"ActivityName": "Dispersed Camping"}],
     ),
     _facility("3", "Visitor Center", 36.60, -118.10, FacilityTypeDescription="Facility"),
@@ -225,6 +228,8 @@ async def test_campgrounds(hass: HomeAssistant, aioclient_mock) -> None:
     )
     assert dispersed["booking"] == "Dispersed"
     assert dispersed["dispersed"] is True
+    # Not reservable and not Forest Service: link to the Recreation.gov area page.
+    assert dispersed["url"] == "https://www.recreation.gov/gateways/607"
     assert result["attribution"] == "Data source: ridb.recreation.gov"
 
     # One Recreation.gov request covers campgrounds and dispersed sites.
@@ -294,3 +299,77 @@ def test_short_description_cleans_html() -> None:
 @pytest.mark.parametrize("empty", [None, "", "<p> </p>"])
 def test_short_description_empty(empty) -> None:
     assert short_description(empty) is None
+
+
+def test_forest_from_legacy_link() -> None:
+    url = "https://www.fs.usda.gov/recarea/stanislaus/recarea/?recid=80290"
+    assert forest_from_legacy_link(url) == "stanislaus"
+    assert forest_from_legacy_link("https://www.recreation.gov/") is None
+    assert forest_from_legacy_link("") is None
+
+
+@pytest.mark.parametrize(
+    ("forest", "name", "url"),
+    [
+        (
+            "stanislaus",
+            "TeleLi puLaya (Black Oak) Campground",
+            "https://www.fs.usda.gov/r05/stanislaus/recreation/teleli-pulaya-black-oak-campground",
+        ),
+        (
+            "stanislaus",
+            "Beardsley Dam Campground",
+            "https://www.fs.usda.gov/r05/stanislaus/recreation/beardsley-dam-campground",
+        ),
+        # Forests whose current path differs from their old short name.
+        (
+            "srnf",
+            "Aikens Creek West Campground",
+            "https://www.fs.usda.gov/r05/sixrivers/recreation/aikens-creek-west-campground",
+        ),
+        (
+            "bdnf",
+            "Lodgepole Campground",
+            "https://www.fs.usda.gov/r01/beaverhead-deerlodge/recreation/lodgepole-campground",
+        ),
+        ("not-a-forest", "Some Campground", None),
+    ],
+)
+def test_forest_campground_url(forest, name, url) -> None:
+    assert forest_campground_url(forest, name) == url
+
+
+async def test_campground_links(hass: HomeAssistant, aioclient_mock) -> None:
+    """Reservable: Recreation.gov page. First-come Forest Service: its Forest
+    Service page. Anything else: the Recreation.gov area page, or no link."""
+    facilities = [
+        _facility("10354715", "Meadowview Campground", 36.61, -118.13, ParentRecAreaID="1076"),
+        _facility(
+            "245552",
+            "Beardsley Dam Campground",
+            36.62,
+            -118.13,
+            Reservable=False,
+            ParentRecAreaID="1076",
+            LINK=[
+                {
+                    "Title": "Beardsley Dam Campground",
+                    "URL": "https://www.fs.usda.gov/recarea/stanislaus/recarea/?recid=15013",
+                }
+            ],
+        ),
+        _facility("900", "BLM Camp", 36.63, -118.13, Reservable=False, ParentRecAreaID="607"),
+        _facility("901", "No Area Camp", 36.64, -118.13, Reservable=False),
+    ]
+    aioclient_mock.get(RIDB_FACILITIES_URL, json={"RECDATA": facilities})
+    aioclient_mock.get(USFS_RECREATION_URL, json={"features": []})
+    result = await async_campgrounds(async_get_clientsession(hass), "key", 36.6, -118.13, 25)
+    urls = {c["name"]: c["url"] for c in result["campgrounds"]}
+    assert urls == {
+        "Meadowview Campground": "https://www.recreation.gov/camping/campgrounds/10354715",
+        "Beardsley Dam Campground": (
+            "https://www.fs.usda.gov/r05/stanislaus/recreation/beardsley-dam-campground"
+        ),
+        "BLM Camp": "https://www.recreation.gov/gateways/607",
+        "No Area Camp": None,
+    }

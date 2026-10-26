@@ -30,6 +30,10 @@ from .rules import (
     forest_url,
     fws_refuge_url,
     nps_unit_url,
+    forest_campground_url,
+    forest_from_legacy_link,
+    recreation_gov_area_url,
+    recreation_gov_campground_url,
     recreation_gov_search_url,
 )
 
@@ -38,6 +42,25 @@ DESCRIPTION_MAX_CHARS = 160
 
 _HTML_TAG = re.compile(r"<[^>]+>")
 _OVERVIEW_HEADING = re.compile(r"^overview\s*:?\s*", re.IGNORECASE)
+
+
+def campground_link(fac: dict[str, Any], name: str, reservable: bool) -> str | None:
+    """Best web page for a campground.
+
+    Recreation.gov only has campground pages for reservable campgrounds. For a
+    first-come Forest Service campground, link to its current Forest Service
+    page; otherwise to its Recreation.gov area page (e.g. the national forest).
+    """
+    facility_id = fac.get("FacilityID")
+    if reservable and facility_id:
+        return recreation_gov_campground_url(str(facility_id))
+    for link in fac.get("LINK") or []:
+        forest = forest_from_legacy_link(str(link.get("URL") or ""))
+        if forest and (url := forest_campground_url(forest, name)):
+            return url
+    if area := fac.get("ParentRecAreaID"):
+        return recreation_gov_area_url(str(area))
+    return None
 
 
 def short_description(text: Any, max_chars: int = DESCRIPTION_MAX_CHARS) -> str | None:
@@ -279,7 +302,7 @@ async def async_campgrounds(
                 "stay_limit": fac.get("StayLimit") or None,
                 "phone": fac.get("FacilityPhone") or None,
                 "description": short_description(fac.get("FacilityDescription")),
-                "url": f"https://www.recreation.gov/camping/campgrounds/{fac.get('FacilityID')}",
+                "url": campground_link(fac, name, reservable),
                 "directions_url": (
                     f"https://www.google.com/maps/dir/?api=1&destination={flat},{flon}"
                 ),

@@ -152,6 +152,23 @@ def main() -> int:
         check_page(rules.forest_url(code))
         time.sleep(3)  # the Forest Service rate-limits quick requests
 
+    # Current forest paths, used to build first-come campground links.
+    print(f"== Forest paths ({len(forests.FOREST_PATHS)})")
+    for path in forests.FOREST_PATHS.values():
+        check_page(f"https://www.fs.usda.gov/{path}")
+        time.sleep(3)
+
+    # Campground pages built from the name, including a forest whose path changed.
+    print("== Forest Service campground pages")
+    for forest, name in (
+        ("stanislaus", "TeleLi puLaya (Black Oak) Campground"),
+        ("stanislaus", "Beardsley Dam Campground"),
+        ("inyo", "Lone Pine Campground"),
+        ("srnf", "Aikens Creek West Campground"),
+    ):
+        check_page(rules.forest_campground_url(forest, name))
+        time.sleep(3)
+
     print(f"\n{len(failures)} failed, {len(skipped)} skipped (rate limited)")
     for failure in failures:
         print(f"  - {failure}")

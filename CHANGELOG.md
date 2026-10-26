@@ -11,6 +11,10 @@ Upgrading is safe.  Entity IDs, the refresh button and sensor values keep the sa
 - Unit Name has new attributes, and Management Name links to the managing office's rules page.
 - Optional sensors are off, so no new entities appear until you turn them on.
 
+## v0.3.0-beta2
+
+- Fixed campground links for campgrounds you can't book on Recreation.gov, which have no Recreation.gov page.  First-come Forest Service campgrounds now link to their Forest Service page, and others to their Recreation.gov area page.
+
 ## v0.3.0-beta
 
 **Land lookup**

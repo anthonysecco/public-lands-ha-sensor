@@ -9,10 +9,16 @@ from __future__ import annotations
 import re
 from urllib.parse import quote
 
-from .forests import FOREST_SLUGS
+from .forests import FOREST_PATHS, FOREST_SLUGS
 
 BLM_CAMPING_URL = "https://www.blm.gov/programs/recreation/camping"
 RECREATION_GOV_SEARCH_URL = "https://www.recreation.gov/search?q="
+RECREATION_GOV_CAMPGROUND_URL = "https://www.recreation.gov/camping/campgrounds/"
+RECREATION_GOV_AREA_URL = "https://www.recreation.gov/gateways/"
+
+# Recreation.gov records link to Forest Service pages in the old format,
+# e.g. https://www.fs.usda.gov/recarea/stanislaus/recarea/?recid=80290
+_FS_LEGACY_LINK = re.compile(r"fs\.usda\.gov/recarea/([a-z0-9-]+)/", re.IGNORECASE)
 
 _BLM_OFFICE_SUFFIXES = ("Field Office", "District Office")
 _FWS_REFUGE_SUFFIX = " National Wildlife Refuge"
@@ -54,3 +60,31 @@ def forest_url(forest_org_code: str) -> str | None:
 def recreation_gov_search_url(name: str) -> str:
     """Recreation.gov search for a place name."""
     return RECREATION_GOV_SEARCH_URL + quote(name)
+
+
+def recreation_gov_campground_url(facility_id: str) -> str:
+    """Recreation.gov campground page. Only exists for reservable campgrounds."""
+    return f"{RECREATION_GOV_CAMPGROUND_URL}{facility_id}"
+
+
+def recreation_gov_area_url(rec_area_id: str) -> str:
+    """Recreation.gov page for a recreation area, e.g. a national forest."""
+    return f"{RECREATION_GOV_AREA_URL}{rec_area_id}"
+
+
+def forest_from_legacy_link(url: str) -> str | None:
+    """Forest short name from an old-format Forest Service link, e.g. 'stanislaus'."""
+    match = _FS_LEGACY_LINK.search(url or "")
+    return match.group(1).lower() if match else None
+
+
+def forest_campground_url(forest: str, name: str) -> str | None:
+    """Current Forest Service page for a campground, built from its name.
+
+    e.g. ('stanislaus', 'Beardsley Dam Campground') ->
+    https://www.fs.usda.gov/r05/stanislaus/recreation/beardsley-dam-campground
+    """
+    path = FOREST_PATHS.get(forest)
+    if not path or not name.strip():
+        return None
+    return f"https://www.fs.usda.gov/{path}/recreation/{_slug(name)}"

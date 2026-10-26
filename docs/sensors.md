@@ -56,7 +56,7 @@ Turned on under [Configuration](configuration.md).
 
 | Attribute | Description |
 |-----------|-------------|
-| campgrounds | The nearest ten, each with `name`, `distance_mi`, `booking` (Reservable, First come or Dispersed), `reservable`, `dispersed`, `stay_limit`, `phone`, `description` (the start of Recreation.gov's description, up to about 160 characters), `url` (Recreation.gov page) and `directions_url` (Google Maps).  `booking` comes from Recreation.gov's reservable flag, which isn't always right. |
+| campgrounds | The nearest ten, each with `name`, `distance_mi`, `booking` (Reservable, First come or Dispersed), `reservable`, `dispersed`, `stay_limit`, `phone`, `description` (the start of Recreation.gov's description, up to about 160 characters), `url` (Recreation.gov page if reservable; otherwise the Forest Service page for Forest Service campgrounds, or the Recreation.gov area page) and `directions_url` (Google Maps).  `booking` comes from Recreation.gov's reservable flag, which isn't always right. |
 | nearest / nearest_distance_mi | The closest one. |
 | closed_hidden | How many campgrounds were left out because the Forest Service reports them closed for the season.  Other agencies don't publish a status, so their campgrounds always show. |
 | radius_mi | The search radius used. |

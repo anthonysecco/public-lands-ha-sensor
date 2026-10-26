@@ -49,7 +49,11 @@ The city, county and state line appears only when the city, county and state opt
 
 ## Nearby campgrounds card
 
-Needs the nearby campgrounds option.  A table of the nearest campgrounds, with a short description of each below it.  Tap a name to open its Recreation.gov page (to check availability and book), or tap the miles for directions:
+Needs the nearby campgrounds option.  A table of the nearest campgrounds, with a short description of each below it.  Tap the miles for directions, or a name to open the campground's page:
+
+- **Reservable campgrounds** open their Recreation.gov page, to check availability and book.
+- **First-come Forest Service campgrounds** open their Forest Service page, which shows whether the site is open.
+- **Other campgrounds** open the Recreation.gov page for their area, such as the national forest.
 
 ```yaml
 type: markdown
@@ -66,7 +70,7 @@ content: |
   | Campground | Miles | Phone |
   |:---|---:|:---|
   {%- for c in camps %}
-  | [{{ c.name }}]({{ c.url }}) | [{{ c.distance_mi }}]({{ c.directions_url }}) | {{ c.phone or '—' }} |
+  | {% if c.url %}[{{ c.name }}]({{ c.url }}){% else %}{{ c.name }}{% endif %} | [{{ c.distance_mi }}]({{ c.directions_url }}) | {{ c.phone or '—' }} |
   {%- endfor %}
   {% for c in camps if c.description %}
 
