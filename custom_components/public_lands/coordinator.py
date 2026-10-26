@@ -25,6 +25,8 @@ from .const import (
     DEFAULT_LOCATION_ENTITY,
     DEFAULT_SEARCH_RADIUS,
     DOMAIN,
+    MAX_SEARCH_RADIUS,
+    MIN_SEARCH_RADIUS,
     FEATURE_CAMPGROUNDS,
     FEATURE_CITY_COUNTY,
     STORAGE_KEY,
@@ -113,7 +115,14 @@ class PublicLandsCoordinator(DataUpdateCoordinator[dict[str, Any] | None]):
                 FEATURE_CITY_COUNTY, async_city_county(session, lat, lon)
             )
         if self.feature_enabled(FEATURE_CAMPGROUNDS):
-            radius = float(options.get(CONF_SEARCH_RADIUS) or DEFAULT_SEARCH_RADIUS)
+            # Keep within 10-25 miles even if an older beta saved a smaller value.
+            radius = min(
+                max(
+                    float(options.get(CONF_SEARCH_RADIUS) or DEFAULT_SEARCH_RADIUS),
+                    MIN_SEARCH_RADIUS,
+                ),
+                MAX_SEARCH_RADIUS,
+            )
             extras[FEATURE_CAMPGROUNDS] = await self._optional(
                 FEATURE_CAMPGROUNDS,
                 async_campgrounds(session, options[CONF_RIDB_API_KEY], lat, lon, radius),

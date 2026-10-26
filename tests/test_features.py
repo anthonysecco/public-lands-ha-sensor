@@ -160,6 +160,17 @@ async def test_all_features_on(hass: HomeAssistant, aioclient_mock) -> None:
     assert hass.states.get("sensor.uspl_unit_name").state == "Alabama Hills National Scenic Area"
 
 
+async def test_campground_radius_kept_within_10_to_25_miles(
+    hass: HomeAssistant, aioclient_mock
+) -> None:
+    """A radius saved by an older beta (5 miles) is raised to the 10-mile minimum."""
+    _mock_all(aioclient_mock)
+    await _setup(hass, {**ALL_ON, CONF_SEARCH_RADIUS: 5})
+    await _press(hass)
+    ridb_call = next(c for c in aioclient_mock.mock_calls if "ridb" in str(c[1]))
+    assert ridb_call[1].query["radius"] == "10.0"
+
+
 async def test_campgrounds_off_without_key(hass: HomeAssistant, aioclient_mock) -> None:
     _mock_all(aioclient_mock)
     await _setup(hass, {**ALL_ON, CONF_RIDB_API_KEY: ""})

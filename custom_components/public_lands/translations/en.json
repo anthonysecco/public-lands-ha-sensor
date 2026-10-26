@@ -27,7 +27,7 @@
           "city_county": "Adds USPL City, USPL County and USPL State from the U.S. Census Bureau. Useful for city overnight-parking rules.",
           "campgrounds": "Adds USPL Nearby Campgrounds from Recreation.gov. Needs your own free API key.",
           "ridb_api_key": "Get a free key by signing up at ridb.recreation.gov. Your key stays on your Home Assistant.",
-          "search_radius": "How far to look for campgrounds, in miles (Recreation.gov allows up to 25)."
+          "search_radius": "How far to look for campgrounds, from 10 to 25 miles (25 is Recreation.gov's maximum)."
         }
       }
     },

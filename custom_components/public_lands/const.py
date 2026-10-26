@@ -15,7 +15,7 @@ CONF_CAMPGROUNDS: Final = "campgrounds"
 CONF_RIDB_API_KEY: Final = "ridb_api_key"
 CONF_SEARCH_RADIUS: Final = "search_radius"
 DEFAULT_SEARCH_RADIUS: Final = 25
-MIN_SEARCH_RADIUS: Final = 5
+MIN_SEARCH_RADIUS: Final = 10
 MAX_SEARCH_RADIUS: Final = 25  # Recreation.gov's maximum, in miles
 
 FEATURE_CITY_COUNTY: Final = "city_county"
