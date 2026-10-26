@@ -17,6 +17,7 @@ from custom_components.public_lands.const import (
     DOMAIN,
     NPS_BOUNDARY_URL,
     RIDB_FACILITIES_URL,
+    USFS_RECREATION_URL,
 )
 
 from .conftest import ALABAMA_HILLS, BLM_FEE, PADUS_QUERY_URL, features
@@ -82,6 +83,7 @@ def _mock_all(aioclient_mock) -> None:
             ]
         },
     )
+    aioclient_mock.get(USFS_RECREATION_URL, json={"features": []})
 
 
 async def test_upgrade_adds_no_new_sensors(hass: HomeAssistant, aioclient_mock) -> None:

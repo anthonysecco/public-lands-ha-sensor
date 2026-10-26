@@ -110,6 +110,31 @@ def main() -> int:
         failures.append(f"Recreation.gov API: expected 401 without a key, got {status}")
         print(f"FAIL  Recreation.gov API: expected 401 without a key, got {status}")
 
+    # Forest Service campground status, used to hide closed campgrounds.
+    params = urllib.parse.urlencode(
+        {
+            "geometry": "-118.13,36.6",
+            "geometryType": "esriGeometryPoint",
+            "inSR": "4326",
+            "distance": "27",
+            "units": "esriSRUnit_StatuteMile",
+            "where": "markeractivity LIKE '%Camping%'",
+            "outFields": "openstatus,latitude,longitude",
+            "returnGeometry": "false",
+            "f": "json",
+        }
+    )
+    status, body = fetch(f"{const['USFS_RECREATION_URL']}?{params}")
+    try:
+        sites = [f["attributes"] for f in json.loads(body)["features"]]
+    except (ValueError, KeyError, TypeError):
+        sites = []
+    if status == 200 and sites and all("openstatus" in s and "latitude" in s for s in sites):
+        print(f"ok    Forest Service campground status: {len(sites)} sites near Alabama Hills")
+    else:
+        failures.append(f"Forest Service campground status: HTTP {status}, {len(sites)} sites")
+        print(f"FAIL  Forest Service campground status: HTTP {status}, {len(sites)} sites")
+
     print("== Agency links")
     for url in (
         rules.BLM_CAMPING_URL,

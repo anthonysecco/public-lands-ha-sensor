@@ -44,6 +44,14 @@ RIDB_FACILITIES_URL: Final = "https://ridb.recreation.gov/api/v1/facilities"
 RIDB_ATTRIBUTION: Final = "Data source: ridb.recreation.gov"
 MAX_CAMPGROUNDS_LISTED: Final = 10
 
+# Forest Service recreation sites, with an open/closed status for its campgrounds.
+USFS_RECREATION_URL: Final = (
+    "https://apps.fs.usda.gov/arcx/rest/services/EDW/"
+    "EDW_RecreationOpportunities_01/MapServer/0/query"
+)
+# A Recreation.gov campground matches the nearest Forest Service site within this distance.
+FS_MATCH_DISTANCE_MI: Final = 1.5
+
 # USGS PAD-US 4.1 "Manager Name" layer: returns every overlapping area at a point.
 PADUS_QUERY_URL: Final = (
     "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/"

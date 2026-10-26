@@ -14,6 +14,7 @@ from custom_components.public_lands.const import (
     NPS_BOUNDARY_URL,
     RIDB_FACILITIES_URL,
     USFS_FOREST_URL,
+    USFS_RECREATION_URL,
 )
 from custom_components.public_lands.extras import (
     async_campgrounds,
@@ -153,38 +154,94 @@ def _facility(fid: str, name: str, lat: float, lon: float, **extra) -> dict:
     }
 
 
+def _fs_site(lat: float, lon: float, status: str) -> dict:
+    return {"attributes": {"latitude": str(lat), "longitude": str(lon), "openstatus": status}}
+
+
+# Near Alabama Hills, as Recreation.gov and the Forest Service reported them (Oct 2026).
+NEARBY_FACILITIES = [
+    _facility("10004620", "Tuttle Creek Campground", 36.565, -118.127, StayLimit="14 days"),
+    _facility(
+        "232069", "LONE PINE", 36.5976111, -118.1848056, FacilityPhone="760-937-6070"
+    ),
+    _facility(
+        "232123", "WHITNEY PORTAL", 36.5898611, -118.2297778, FacilityPhone="760-937-6070"
+    ),
+    _facility(
+        "227765",
+        "Ehrenberg Sandbowl",
+        36.70,
+        -118.05,
+        FacilityTypeDescription="Facility",
+        Reservable=False,
+        ACTIVITY=[{"ActivityName": "CAMPING"}, {"ActivityName": "Dispersed Camping"}],
+    ),
+    _facility("3", "Visitor Center", 36.60, -118.10, FacilityTypeDescription="Facility"),
+    _facility("4", "No Coordinates", 0, 0),
+    _facility("5", "Far Away Campground", 37.5, -118.13),
+]
+FOREST_SERVICE_STATUS = {
+    "features": [
+        _fs_site(36.597069, -118.185447, "open"),  # Lone Pine
+        _fs_site(36.588931, -118.232031, "closed"),  # Whitney Portal
+    ]
+}
+
+
 async def test_campgrounds(hass: HomeAssistant, aioclient_mock) -> None:
-    aioclient_mock.get(
-        RIDB_FACILITIES_URL,
-        json={
-            "RECDATA": [
-                _facility("2", "TUTTLE CREEK CAMPGROUND", 36.56, -118.13, StayLimit="14 days"),
-                _facility("1", "Lone Pine Campground", 36.597, -118.22, Reservable=False),
-                _facility("3", "Visitor Center", 36.60, -118.10, FacilityTypeDescription="Facility"),
-                _facility("4", "No Coordinates", 0, 0),
-                _facility("5", "Far Away Campground", 37.5, -118.13),
-            ],
-            "METADATA": {},
-        },
-    )
+    aioclient_mock.get(RIDB_FACILITIES_URL, json={"RECDATA": NEARBY_FACILITIES, "METADATA": {}})
+    aioclient_mock.get(USFS_RECREATION_URL, json=FOREST_SERVICE_STATUS)
     result = await async_campgrounds(async_get_clientsession(hass), "key", 36.6, -118.13, 25)
 
-    assert result["count"] == 2
-    assert result["nearest"] == "Tuttle Creek Campground"
+    # Whitney Portal is closed for the season, so it is hidden.
+    assert result["count"] == 3
+    assert result["closed_hidden"] == 1
     assert [c["name"] for c in result["campgrounds"]] == [
         "Tuttle Creek Campground",
-        "Lone Pine Campground",
+        "Lone Pine",
+        "Ehrenberg Sandbowl",
     ]
-    first = result["campgrounds"][0]
-    assert first["url"] == "https://www.recreation.gov/camping/campgrounds/2"
-    assert first["stay_limit"] == "14 days"
-    assert result["campgrounds"][1]["reservable"] is False
+    tuttle, lone_pine, dispersed = result["campgrounds"]
+    assert tuttle["booking"] == "Reservable"
+    assert tuttle["stay_limit"] == "14 days"
+    assert tuttle["phone"] is None
+    assert tuttle["url"] == "https://www.recreation.gov/camping/campgrounds/10004620"
+    assert lone_pine["phone"] == "760-937-6070"
+    assert lone_pine["directions_url"] == (
+        "https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056"
+    )
+    assert dispersed["booking"] == "Dispersed"
+    assert dispersed["dispersed"] is True
     assert result["attribution"] == "Data source: ridb.recreation.gov"
 
-    method, url, _, headers = aioclient_mock.mock_calls[0]
+    # One Recreation.gov request covers campgrounds and dispersed sites.
+    ridb_calls = [c for c in aioclient_mock.mock_calls if "ridb" in str(c[1])]
+    assert len(ridb_calls) == 1
+    _, url, _, headers = ridb_calls[0]
     assert headers == {"apikey": "key"}
-    assert url.query["activity"] == "CAMPING"
+    assert url.query["activity"] == "CAMPING,Dispersed Camping"
+    assert url.query["full"] == "true"
     assert url.query["radius"] == "25"
+
+
+async def test_campgrounds_list_nearest_ten(hass: HomeAssistant, aioclient_mock) -> None:
+    many = [_facility(str(i), f"Camp {i}", 36.6 + i * 0.01, -118.13) for i in range(15)]
+    aioclient_mock.get(RIDB_FACILITIES_URL, json={"RECDATA": many})
+    aioclient_mock.get(USFS_RECREATION_URL, json={"features": []})
+    result = await async_campgrounds(async_get_clientsession(hass), "key", 36.6, -118.13, 25)
+    assert result["count"] == 15
+    assert len(result["campgrounds"]) == 10
+    assert result["campgrounds"][0]["name"] == "Camp 0"
+
+
+async def test_campgrounds_shown_if_forest_service_check_fails(
+    hass: HomeAssistant, aioclient_mock
+) -> None:
+    aioclient_mock.get(RIDB_FACILITIES_URL, json={"RECDATA": NEARBY_FACILITIES})
+    aioclient_mock.get(USFS_RECREATION_URL, status=500)
+    result = await async_campgrounds(async_get_clientsession(hass), "key", 36.6, -118.13, 25)
+    assert result["closed_hidden"] == 0
+    assert "Whitney Portal" in [c["name"] for c in result["campgrounds"]]
 
 
 async def test_campgrounds_bad_key(hass: HomeAssistant, aioclient_mock) -> None:

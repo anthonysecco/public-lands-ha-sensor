@@ -7,18 +7,20 @@ from typing import Any
 
 import aiohttp
 
-from .api import arcgis_point_query, get_json
+from .api import PublicLandsError, arcgis_point_query, get_json
 from .const import (
     CENSUS_COUNTIES_URL,
     CENSUS_PLACES_URL,
+    FS_MATCH_DISTANCE_MI,
     MAX_CAMPGROUNDS_LISTED,
+    NON_PROTECTED_AREA,
     NPS_BOUNDARY_URL,
     PRIVATE_LAND,
-    NON_PROTECTED_AREA,
     RIDB_ATTRIBUTION,
     RIDB_FACILITIES_URL,
     UNKNOWN,
     USFS_FOREST_URL,
+    USFS_RECREATION_URL,
 )
 from .rules import (
     BLM_CAMPING_URL,
@@ -136,13 +138,58 @@ def _miles(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 3958.8 * 2 * asin(sqrt(a))
 
 
-def _ridb_params(**extra: str) -> dict[str, str]:
-    return {"limit": "50", **extra}
-
-
 async def async_validate_ridb_key(session: aiohttp.ClientSession, api_key: str) -> None:
     """Raise InvalidApiKey or PublicLandsError if the key does not work."""
     await get_json(session, RIDB_FACILITIES_URL, {"limit": "1"}, {"apikey": api_key})
+
+
+async def _forest_service_status(
+    session: aiohttp.ClientSession, lat: float, lon: float, radius_mi: float
+) -> list[tuple[float, float, str]]:
+    """Open/closed status of Forest Service campgrounds near a point.
+
+    Recreation.gov has no open/closed field, but the Forest Service publishes
+    one for its own campgrounds. Returns (lat, lon, status) tuples; empty if
+    the lookup fails, so campgrounds are then shown rather than hidden.
+    """
+    params = {
+        "geometry": f"{lon},{lat}",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "distance": str(radius_mi + 2),
+        "units": "esriSRUnit_StatuteMile",
+        "where": "markeractivity LIKE '%Camping%'",
+        "outFields": "openstatus,latitude,longitude",
+        "returnGeometry": "false",
+        "f": "json",
+    }
+    try:
+        data = await get_json(session, USFS_RECREATION_URL, params)
+    except PublicLandsError:
+        return []
+    sites: list[tuple[float, float, str]] = []
+    for feature in data.get("features") or []:
+        attrs = feature.get("attributes") or {}
+        try:
+            sites.append(
+                (
+                    float(attrs["latitude"]),
+                    float(attrs["longitude"]),
+                    str(attrs.get("openstatus") or "").lower(),
+                )
+            )
+        except (KeyError, TypeError, ValueError):
+            continue
+    return sites
+
+
+def _is_closed(lat: float, lon: float, fs_sites: list[tuple[float, float, str]]) -> bool:
+    """Closed if the nearest Forest Service campground (within 1.5 mi) says so."""
+    nearest = min(
+        ((_miles(lat, lon, s_lat, s_lon), status) for s_lat, s_lon, status in fs_sites),
+        default=None,
+    )
+    return bool(nearest and nearest[0] <= FS_MATCH_DISTANCE_MI and nearest[1] == "closed")
 
 
 async def async_campgrounds(
@@ -152,38 +199,62 @@ async def async_campgrounds(
     lon: float,
     radius_mi: float,
 ) -> dict[str, Any]:
-    """Recreation.gov campgrounds within radius_mi, nearest first."""
+    """Recreation.gov campgrounds and dispersed sites within radius_mi.
+
+    One Recreation.gov request plus one free Forest Service status check.
+    Campgrounds the Forest Service reports closed are left out. The nearest
+    ten are listed; the count covers all of them.
+    """
     data = await get_json(
         session,
         RIDB_FACILITIES_URL,
-        _ridb_params(
-            latitude=str(lat),
-            longitude=str(lon),
-            radius=str(radius_mi),
-            activity="CAMPING",
-        ),
+        {
+            "latitude": str(lat),
+            "longitude": str(lon),
+            "radius": str(radius_mi),
+            "activity": "CAMPING,Dispersed Camping",
+            "full": "true",
+            "limit": "50",
+        },
         {"apikey": api_key},
     )
+    fs_sites = await _forest_service_status(session, lat, lon, radius_mi)
+
     camps: list[dict[str, Any]] = []
+    closed = 0
     for fac in data.get("RECDATA") or []:
-        if "campground" not in str(fac.get("FacilityTypeDescription", "")).lower():
-            continue
-        if fac.get("Enabled") is False:
+        activities = {
+            str(a.get("ActivityName", "")).lower() for a in fac.get("ACTIVITY") or []
+        }
+        dispersed = "dispersed camping" in activities
+        is_campground = "campground" in str(fac.get("FacilityTypeDescription", "")).lower()
+        if not (is_campground or dispersed) or fac.get("Enabled") is False:
             continue
         flat, flon = fac.get("FacilityLatitude"), fac.get("FacilityLongitude")
         if not flat or not flon:
             continue
-        distance = _miles(lat, lon, float(flat), float(flon))
+        flat, flon = float(flat), float(flon)
+        distance = _miles(lat, lon, flat, flon)
         if distance > radius_mi:
             continue
+        if _is_closed(flat, flon, fs_sites):
+            closed += 1
+            continue
         name = str(fac.get("FacilityName") or UNKNOWN)
+        reservable = bool(fac.get("Reservable"))
         camps.append(
             {
                 "name": name.title() if name.isupper() else name,
                 "distance_mi": round(distance, 1),
-                "reservable": bool(fac.get("Reservable")),
+                "booking": "Dispersed" if dispersed else "Reservable" if reservable else "First come",
+                "reservable": reservable,
+                "dispersed": dispersed,
                 "stay_limit": fac.get("StayLimit") or None,
+                "phone": fac.get("FacilityPhone") or None,
                 "url": f"https://www.recreation.gov/camping/campgrounds/{fac.get('FacilityID')}",
+                "directions_url": (
+                    f"https://www.google.com/maps/dir/?api=1&destination={flat},{flon}"
+                ),
             }
         )
     camps.sort(key=lambda c: c["distance_mi"])
@@ -192,6 +263,7 @@ async def async_campgrounds(
         "nearest": camps[0]["name"] if camps else None,
         "nearest_distance_mi": camps[0]["distance_mi"] if camps else None,
         "campgrounds": camps[:MAX_CAMPGROUNDS_LISTED],
+        "closed_hidden": closed,
         "radius_mi": radius_mi,
         "attribution": RIDB_ATTRIBUTION,
     }

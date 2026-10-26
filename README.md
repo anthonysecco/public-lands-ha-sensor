@@ -85,7 +85,7 @@ These are off by default.  Turn them on in [Configuration](#configuration).  The
 | Option | Sensors | Source |
 |--------|---------|--------|
 | City, county and state | **USPL City** (or "Unincorporated" outside city limits), **USPL County** and **USPL State**.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
-| Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds are within the search radius (10 to 25 miles, default 25), with the nearest ten as attributes (name, distance, reservable, stay limit, link). | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) |
+| Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds and dispersed-camping sites are within the search radius (10 to 25 miles, default 25).  The nearest ten are attributes with name, distance, booking (Reservable, First come or Dispersed), stay limit, phone, a Recreation.gov link and a directions link.  Campgrounds the Forest Service reports closed for the season are left out (`closed_hidden` counts them); other agencies don't publish a status. | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) and the Forest Service |
 
 **Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
 
@@ -235,6 +235,56 @@ At Alabama Hills it shows:
 > 🏕️ [BLM Camping](https://www.blm.gov/programs/recreation/camping)
 
 The city and county line appears only when the [City, county and state](#optional-sensors) option is on.  "Unincorporated" means you're outside any city's limits.  On private land the card shows "No rules link for this location."
+
+#### Nearby Campgrounds Card
+
+With the [Nearby campgrounds](#optional-sensors) option on, this Markdown card lists the nearest campgrounds with links to Recreation.gov (to check availability and book) and to directions:
+
+```yaml
+type: markdown
+content: |
+  {% set s = 'sensor.uspl_nearby_campgrounds' %}
+  {% set camps = state_attr(s, 'campgrounds') or [] %}
+  {% set total = states(s) | int(0) %}
+  {% set hidden = state_attr(s, 'closed_hidden') | int(0) %}
+  ### ⛺ {{ total }} campground{{ '' if total == 1 else 's' }} within {{ state_attr(s, 'radius_mi') | int(25) }} miles
+  {% if total > camps | count %}
+  *Showing the nearest {{ camps | count }}*
+  {% endif %}
+  {% for c in camps %}
+
+  **[{{ c.name }}]({{ c.url }})** · {{ c.distance_mi }} mi · {{ c.booking }}<br>
+  🧭 [Directions]({{ c.directions_url }}){% if c.phone %} · 📞 {{ c.phone }}{% endif %}
+  {% endfor %}
+  {% if total == 0 %}
+  No Recreation.gov campgrounds nearby.
+  {% endif %}
+  {% if hidden %}
+
+  *{{ hidden }} closed for the season hidden*
+  {% endif %}
+
+  *Data: ridb.recreation.gov*
+```
+
+Near Alabama Hills in late October it shows:
+
+> ### ⛺ 3 campgrounds within 25 miles
+>
+> **[Tuttle Creek Campground](https://www.recreation.gov/camping/campgrounds/10004620)** · 2.4 mi · Reservable<br>
+> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.565,-118.127)
+>
+> **[Lone Pine](https://www.recreation.gov/camping/campgrounds/232069)** · 3 mi · Reservable<br>
+> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056) · 📞 760-937-6070
+>
+> **[Grays Meadows](https://www.recreation.gov/camping/campgrounds/232052)** · 14.8 mi · Reservable<br>
+> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.7688889,-118.295) · 📞 760-937-6070
+>
+> *2 closed for the season hidden*
+>
+> *Data: ridb.recreation.gov*
+
+Recreation.gov lists mainly federal campgrounds (Forest Service, BLM, National Park Service, Army Corps).  State and county parks, such as most Bay Area campgrounds, aren't included, so the card can show none near cities.  It doesn't show tonight's availability: Recreation.gov's API doesn't offer it, so tap the campground's name to check.
 
 ### Example Data
 
