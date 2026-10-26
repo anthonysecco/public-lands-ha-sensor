@@ -52,7 +52,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(str(err)) from err
 
         try:
-            return await coordinator.client.async_lookup(lat, lon)
+            return await coordinator.async_lookup(lat, lon)
         except PublicLandsError as err:
             raise HomeAssistantError(f"Public lands lookup failed: {err}") from err
 

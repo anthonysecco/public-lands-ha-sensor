@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
@@ -16,9 +18,15 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    FEATURE_CAMPGROUNDS,
+    FEATURE_CITY_COUNTY,
+    FEATURE_RULES_LINK,
+)
 from .coordinator import STATUS_OK, PublicLandsCoordinator
 from .entity import PublicLandsEntity
 
@@ -46,7 +54,100 @@ async def async_setup_entry(
     # API Status is a binary sensor registered on the sensor platform, as in
     # v0.2.x. Moving it would change its entity ID (sensor.uspl_api_status).
     entities.append(PublicLandsStatusBinarySensor(coordinator))
+
+    # Optional sensors exist only while their feature is switched on. Switching a
+    # feature off removes its sensor instead of leaving it unavailable.
+    registry = er.async_get(hass)
+    for definition in OPTIONAL_SENSORS:
+        if coordinator.feature_enabled(definition.feature):
+            entities.append(OptionalSensor(coordinator, definition))
+        elif entity_id := registry.async_get_entity_id(
+            SENSOR_DOMAIN, DOMAIN, definition.unique_id
+        ):
+            registry.async_remove(entity_id)
+
     async_add_entities(entities)
+
+
+@dataclass(frozen=True)
+class OptionalSensorDefinition:
+    """A sensor for one optional feature."""
+
+    feature: str
+    unique_id: str
+    name: str
+    icon: str
+    value: Callable[[dict[str, Any]], Any]
+    attributes: Callable[[dict[str, Any]], dict[str, Any]]
+
+
+OPTIONAL_SENSORS: tuple[OptionalSensorDefinition, ...] = (
+    OptionalSensorDefinition(
+        FEATURE_CITY_COUNTY,
+        "uspl_city",
+        "City",
+        "mdi:city",
+        lambda d: d["city"],
+        lambda d: {"full_name": d["city_full_name"], "state": d["state"]},
+    ),
+    OptionalSensorDefinition(
+        FEATURE_CITY_COUNTY,
+        "uspl_county",
+        "County",
+        "mdi:map",
+        lambda d: d["county"],
+        lambda d: {"state": d["state"]},
+    ),
+    OptionalSensorDefinition(
+        FEATURE_RULES_LINK,
+        "uspl_rules_link",
+        "Rules Link",
+        "mdi:link-variant",
+        lambda d: d["url"],
+        lambda d: {
+            "name": d["name"],
+            "agency": d["agency"],
+            "general_rules_url": d["general_rules_url"],
+        },
+    ),
+    OptionalSensorDefinition(
+        FEATURE_CAMPGROUNDS,
+        "uspl_nearby_campgrounds",
+        "Nearby Campgrounds",
+        "mdi:tent",
+        lambda d: d["count"],
+        lambda d: {k: v for k, v in d.items() if k != "count"},
+    ),
+)
+
+
+class OptionalSensor(PublicLandsEntity, SensorEntity):
+    """Value from an optional feature's lookup."""
+
+    _unrecorded_attributes = frozenset({"campgrounds"})
+
+    def __init__(
+        self, coordinator: PublicLandsCoordinator, definition: OptionalSensorDefinition
+    ) -> None:
+        self._definition = definition
+        self._attr_name = f"USPL {definition.name}"
+        self._attr_icon = definition.icon
+        self._attr_unique_id = definition.unique_id
+        super().__init__(coordinator, SENSOR_DOMAIN)
+
+    def _feature_data(self) -> dict[str, Any] | None:
+        data = self.coordinator.data or {}
+        return (data.get("extras") or {}).get(self._definition.feature)
+
+    @property
+    def native_value(self) -> Any:
+        feature = self._feature_data()
+        return self._definition.value(feature) if feature else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        feature = self._feature_data()
+        return self._definition.attributes(feature) if feature else None
 
 
 class PublicLandsSensor(PublicLandsEntity, SensorEntity):

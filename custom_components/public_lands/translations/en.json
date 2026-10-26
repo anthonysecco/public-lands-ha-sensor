@@ -13,24 +13,37 @@
   "options": {
     "step": {
       "init": {
-        "title": "Location source",
-        "description": "Choose the entity whose latitude and longitude are looked up when you press Refresh USPL.",
+        "title": "Public Lands options",
+        "description": "Choose where your location comes from and which optional sensors to add. Optional sensors update when you press Refresh USPL.",
         "data": {
-          "location_entity": "Location entity"
+          "location_entity": "Location entity",
+          "city_county": "City and county sensors",
+          "rules_link": "Rules link sensor",
+          "campgrounds": "Nearby campgrounds sensor (Recreation.gov)",
+          "ridb_api_key": "Recreation.gov API key",
+          "search_radius": "Campground search radius"
         },
         "data_description": {
-          "location_entity": "A zone, device tracker, person or sensor with latitude and longitude. The default is zone.home."
+          "location_entity": "A zone, device tracker, person or sensor with latitude and longitude. The default is zone.home.",
+          "city_county": "Adds USPL City and USPL County from the U.S. Census Bureau. Useful for city overnight-parking rules.",
+          "rules_link": "Adds USPL Rules Link: the managing office's own web page (BLM field office, National Park, National Forest or Wildlife Refuge) so you can read its rules.",
+          "campgrounds": "Adds USPL Nearby Campgrounds from Recreation.gov. Needs your own free API key.",
+          "ridb_api_key": "Get a free key by signing up at ridb.recreation.gov. Your key stays on your Home Assistant.",
+          "search_radius": "How far to look for campgrounds, in miles (Recreation.gov allows up to 25)."
         }
       }
     },
     "error": {
-      "no_coordinates": "That entity has no latitude and longitude right now."
+      "no_coordinates": "That entity has no latitude and longitude right now.",
+      "api_key_required": "Enter your Recreation.gov API key to turn on nearby campgrounds.",
+      "invalid_api_key": "Recreation.gov rejected this API key.",
+      "cannot_connect": "Could not reach Recreation.gov to check the key. Try again later."
     }
   },
   "services": {
     "lookup": {
       "name": "Look up a location",
-      "description": "Looks up the public land at a coordinate and returns the result without changing the sensors. Leave the coordinates empty to use the current location.",
+      "description": "Looks up the public land at a coordinate and returns the result without changing the sensors. Leave the coordinates empty to use the current location. Optional features that are switched on are included.",
       "fields": {
         "latitude": {
           "name": "Latitude",

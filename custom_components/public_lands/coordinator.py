@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable
 from datetime import datetime
 import logging
 from typing import Any
@@ -14,14 +15,24 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api import PublicLandsClient, PublicLandsError
+from .api import InvalidApiKey, PublicLandsClient, PublicLandsError
 from .const import (
+    CONF_CAMPGROUNDS,
+    CONF_CITY_COUNTY,
     CONF_LOCATION_ENTITY,
+    CONF_RIDB_API_KEY,
+    CONF_RULES_LINK,
+    CONF_SEARCH_RADIUS,
     DEFAULT_LOCATION_ENTITY,
+    DEFAULT_SEARCH_RADIUS,
     DOMAIN,
+    FEATURE_CAMPGROUNDS,
+    FEATURE_CITY_COUNTY,
+    FEATURE_RULES_LINK,
     STORAGE_KEY,
     STORAGE_VERSION,
 )
+from .extras import async_campgrounds, async_city_county, async_rules_link
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -72,10 +83,64 @@ class PublicLandsCoordinator(DataUpdateCoordinator[dict[str, Any] | None]):
             return self.hass.config.latitude, self.hass.config.longitude
         raise UpdateFailed(f"{entity_id} has no latitude and longitude")
 
+    def feature_enabled(self, feature: str) -> bool:
+        """Whether an optional feature is switched on under Configure."""
+        if feature == FEATURE_CAMPGROUNDS:
+            return bool(
+                self.entry.options.get(CONF_CAMPGROUNDS)
+                and self.entry.options.get(CONF_RIDB_API_KEY)
+            )
+        option = {
+            FEATURE_CITY_COUNTY: CONF_CITY_COUNTY,
+            FEATURE_RULES_LINK: CONF_RULES_LINK,
+        }[feature]
+        return bool(self.entry.options.get(option))
+
+    async def async_lookup(self, latitude: float, longitude: float) -> dict[str, Any]:
+        """Land lookup plus any optional features that are switched on.
+
+        Raises PublicLandsError if the main land lookup fails. A failed optional
+        lookup is logged and left empty so it never hides the land result.
+        """
+        result = await self.client.async_lookup(latitude, longitude)
+        lat, lon = result["latitude"], result["longitude"]
+        session = async_get_clientsession(self.hass)
+        options = self.entry.options
+        extras: dict[str, Any] = {}
+
+        if self.feature_enabled(FEATURE_CITY_COUNTY):
+            extras[FEATURE_CITY_COUNTY] = await self._optional(
+                FEATURE_CITY_COUNTY, async_city_county(session, lat, lon)
+            )
+        if self.feature_enabled(FEATURE_RULES_LINK):
+            extras[FEATURE_RULES_LINK] = await self._optional(
+                FEATURE_RULES_LINK, async_rules_link(session, lat, lon, result)
+            )
+        if self.feature_enabled(FEATURE_CAMPGROUNDS):
+            radius = float(options.get(CONF_SEARCH_RADIUS) or DEFAULT_SEARCH_RADIUS)
+            extras[FEATURE_CAMPGROUNDS] = await self._optional(
+                FEATURE_CAMPGROUNDS,
+                async_campgrounds(session, options[CONF_RIDB_API_KEY], lat, lon, radius),
+            )
+
+        result["extras"] = extras
+        return result
+
+    async def _optional(self, feature: str, lookup: Awaitable[Any]) -> Any:
+        try:
+            return await lookup
+        except InvalidApiKey:
+            _LOGGER.warning(
+                "Recreation.gov rejected the API key; update it under Configure"
+            )
+        except PublicLandsError as err:
+            _LOGGER.warning("Public Lands %s lookup failed: %s", feature, err)
+        return None
+
     async def _async_update_data(self) -> dict[str, Any] | None:
         try:
             lat, lon = self.current_location()
-            result = await self.client.async_lookup(lat, lon)
+            result = await self.async_lookup(lat, lon)
         except (PublicLandsError, UpdateFailed) as err:
             self.status = STATUS_FAIL
             await self._async_save(self.data)

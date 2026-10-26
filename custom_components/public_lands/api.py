@@ -83,6 +83,10 @@ class PublicLandsError(Exception):
     """Raised when a lookup fails."""
 
 
+class InvalidApiKey(PublicLandsError):
+    """Raised when a service rejects the API key."""
+
+
 def _decode(table: dict[str, str], code: Any) -> str:
     if code in (None, ""):
         return UNKNOWN
@@ -223,45 +227,74 @@ class PublicLandsClient:
         out_fields: str,
         distance: int | None = None,
     ) -> list[dict[str, Any]]:
-        params = {
-            "geometry": f"{lon},{lat}",
-            "geometryType": "esriGeometryPoint",
-            "inSR": "4326",
-            "spatialRel": "esriSpatialRelIntersects",
-            "outFields": out_fields,
-            "returnGeometry": "false",
-            "f": "json",
-        }
-        if distance:
-            params["distance"] = str(distance)
-            params["units"] = "esriSRUnit_Meter"
+        return await arcgis_point_query(
+            self._session, url, lat, lon, out_fields, distance=distance
+        )
 
-        last_error: Exception | None = None
-        for attempt in range(2):
-            if attempt:
-                await asyncio.sleep(const.RETRY_DELAY)
-            try:
-                async with asyncio.timeout(REQUEST_TIMEOUT):
-                    async with self._session.get(url, params=params) as resp:
-                        resp.raise_for_status()
-                        data = await resp.json(content_type=None)
-            except (aiohttp.ClientError, TimeoutError, ValueError) as err:
-                last_error = err
-                continue
-            # ArcGIS reports errors inside a normal HTTP 200 response.
-            if not isinstance(data, dict):
-                last_error = PublicLandsError("Unexpected response")
-                continue
-            if "error" in data:
-                error = data["error"] if isinstance(data["error"], dict) else {}
-                last_error = PublicLandsError(
-                    f"Service error {error.get('code')}: {error.get('message')}"
-                )
-                continue
-            features = data.get("features")
-            if not isinstance(features, list):
-                last_error = PublicLandsError("Response has no features")
-                continue
-            return features
 
-        raise PublicLandsError(str(last_error) or type(last_error).__name__)
+async def get_json(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: dict[str, str],
+    headers: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """GET a JSON object, retrying once. Raises PublicLandsError on failure.
+
+    ArcGIS reports errors inside a normal HTTP 200 response, so an "error" key
+    in the body also counts as a failure. HTTP 401 raises InvalidApiKey without
+    retrying.
+    """
+    last_error: Exception | None = None
+    for attempt in range(2):
+        if attempt:
+            await asyncio.sleep(const.RETRY_DELAY)
+        try:
+            async with asyncio.timeout(REQUEST_TIMEOUT):
+                async with session.get(url, params=params, headers=headers) as resp:
+                    if resp.status == 401:
+                        raise InvalidApiKey("The API key was rejected")
+                    resp.raise_for_status()
+                    data = await resp.json(content_type=None)
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+            last_error = err
+            continue
+        if not isinstance(data, dict):
+            last_error = PublicLandsError("Unexpected response")
+            continue
+        if "error" in data:
+            error = data["error"] if isinstance(data["error"], dict) else {}
+            last_error = PublicLandsError(
+                f"Service error {error.get('code')}: {error.get('message')}"
+            )
+            continue
+        return data
+
+    raise PublicLandsError(str(last_error) or type(last_error).__name__)
+
+
+async def arcgis_point_query(
+    session: aiohttp.ClientSession,
+    url: str,
+    lat: float,
+    lon: float,
+    out_fields: str,
+    distance: int | None = None,
+) -> list[dict[str, Any]]:
+    """Return the features of an ArcGIS layer at (or near) a point."""
+    params = {
+        "geometry": f"{lon},{lat}",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": out_fields,
+        "returnGeometry": "false",
+        "f": "json",
+    }
+    if distance:
+        params["distance"] = str(distance)
+        params["units"] = "esriSRUnit_Meter"
+    data = await get_json(session, url, params)
+    features = data.get("features")
+    if not isinstance(features, list):
+        raise PublicLandsError("Response has no features")
+    return features

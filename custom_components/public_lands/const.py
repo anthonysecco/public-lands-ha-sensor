@@ -9,6 +9,40 @@ DOMAIN: Final = "public_lands"
 CONF_LOCATION_ENTITY: Final = "location_entity"
 DEFAULT_LOCATION_ENTITY: Final = "zone.home"
 
+# Optional features (all off by default).
+CONF_CITY_COUNTY: Final = "city_county"
+CONF_RULES_LINK: Final = "rules_link"
+CONF_CAMPGROUNDS: Final = "campgrounds"
+CONF_RIDB_API_KEY: Final = "ridb_api_key"
+CONF_SEARCH_RADIUS: Final = "search_radius"
+DEFAULT_SEARCH_RADIUS: Final = 25
+MIN_SEARCH_RADIUS: Final = 5
+MAX_SEARCH_RADIUS: Final = 25  # Recreation.gov's maximum, in miles
+
+FEATURE_CITY_COUNTY: Final = "city_county"
+FEATURE_RULES_LINK: Final = "rules_link"
+FEATURE_CAMPGROUNDS: Final = "campgrounds"
+
+# Census Bureau TIGERweb: layer 28 = Incorporated Places, 82 = Counties.
+CENSUS_BASE_URL: Final = (
+    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer"
+)
+CENSUS_PLACES_URL: Final = f"{CENSUS_BASE_URL}/28/query"
+CENSUS_COUNTIES_URL: Final = f"{CENSUS_BASE_URL}/82/query"
+
+NPS_BOUNDARY_URL: Final = (
+    "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/"
+    "NPS_Land_Resources_Division_Boundary_and_Tract_Data_Service/FeatureServer/2/query"
+)
+USFS_FOREST_URL: Final = (
+    "https://apps.fs.usda.gov/arcx/rest/services/EDW/"
+    "EDW_ForestSystemBoundaries_01/MapServer/0/query"
+)
+
+RIDB_FACILITIES_URL: Final = "https://ridb.recreation.gov/api/v1/facilities"
+RIDB_ATTRIBUTION: Final = "Data source: ridb.recreation.gov"
+MAX_CAMPGROUNDS_LISTED: Final = 10
+
 # USGS PAD-US 4.1 "Manager Name" layer: returns every overlapping area at a point.
 PADUS_QUERY_URL: Final = (
     "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/"

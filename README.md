@@ -63,6 +63,7 @@ Upgrading is safe.  Entity IDs, the refresh button, and sensor values keep the s
 - Private land now shows **Private Land** instead of blank sensors.
 - Sensors keep their last values after a Home Assistant restart.
 - The Unit Name sensor has new attributes (see [Sensors](#sensors)).
+- [Optional sensors](#optional-sensors) are off, so no new entities appear until you turn them on.
 
 ## Usage
 
@@ -71,6 +72,18 @@ Upon restart, it will automatically create the sensors and button.  No configura
 ### Location Source
 
 By default the integration uses the coordinates of `zone.home`.  To use a GPS tracker instead, go to **Settings > Devices & Services > Public Lands > Configure** and pick any zone, device tracker, person, or sensor that has latitude and longitude.
+
+### Optional Sensors
+
+These are off by default.  Turn them on under **Settings > Devices & Services > Public Lands > Configure**.  They update when you press **Refresh USPL**, and turning one off removes its sensors.
+
+| Option | Sensors | Source |
+|--------|---------|--------|
+| City and county | **USPL City** (or "Unincorporated" outside city limits) and **USPL County**, with the state as an attribute.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
+| Rules link | **USPL Rules Link**: a link to the managing office's own web page so you can read its rules: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other land links to a Recreation.gov search.  Nothing on private land. | Agency websites (no key) |
+| Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds are within the search radius (5 to 25 miles, default 25), with the nearest ten as attributes (name, distance, reservable, stay limit, link). | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) |
+
+**Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
 
 ### Trigger Methods
 
@@ -191,12 +204,11 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 Ideas being considered for later versions:
 
 - **Camping guidance** - a sensor summarizing whether dispersed camping is generally allowed for the land you are on.
-- **Nearby campgrounds** - from Recreation.gov, using your own free API key.
 - **Red Flag Warnings** - National Weather Service fire weather warnings for your location.
-- **City and county** - which city limits and county you are in, from the Census Bureau, to help with local overnight-parking rules.
-- **Nearest rest area** - the closest highway rest area from OpenStreetMap, with a note on that state's overnight parking rules.
+- **Nearest rest area** - the closest highway rest area from OpenStreetMap.
 - **Nearby services** - drinking water, dump stations and showers near you from OpenStreetMap.
-- **Official rules link** - a link to the managing office's own web page (BLM field office, National Park, National Forest or Wildlife Refuge) so you can read its camping rules.
+
+The OpenStreetMap ideas need caching first: the public OpenStreetMap servers took about 40 seconds per search in testing.
 
 ## 💖 Support
 
