@@ -33,6 +33,7 @@ import time
 import numpy as np
 import shapefile  # pyshp
 import shapely
+import shapely.errors
 from shapely import STRtree
 from shapely.geometry import LinearRing, MultiPolygon, Polygon, shape
 
