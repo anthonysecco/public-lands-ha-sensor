@@ -11,6 +11,8 @@ It uses two official, free sources (no API key needed):
 - **USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services)** ([Manager Name layer](https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Manager_Name_PADUS/FeatureServer/0)) covers almost any protected or public land in the United States, including federal, state, county, and regional lands.
 - **BLM [Surface Management Agency](https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1)** map is used when PAD-US has no record. It tells you when you are on private land and fills small gaps in PAD-US, such as road corridors inside a park.
 
+[Optional sensors](#optional-sensors) add city and county (U.S. Census Bureau), a link to the land manager's rules page, and nearby campgrounds (Recreation.gov, with your own free API key).
+
 This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
 
 > An Internet connection is required for this integration to work.
@@ -37,15 +39,6 @@ With that out of the way, let's get started...
 4. Click **Add Integration** at the bottom
 5. Search for **Public Lands**
 
-### Installing a Beta Version
-
-Beta versions (for example **v0.3.0-beta**) are published as GitHub pre-releases, so HACS does not offer them as an update.  To try one:
-
-1. Open **Public Lands** in HACS
-2. Open the menu (⋮) and choose **Redownload**
-3. Turn on **Show beta versions** (or pick the version from the list) and download it
-4. Restart Home Assistant
-
 ### Manual Installation
 
 1. Download the source code of the [latest release](https://github.com/anthonysecco/public-lands-ha-sensor/releases).
@@ -67,15 +60,24 @@ Upgrading is safe.  Entity IDs, the refresh button, and sensor values keep the s
 
 ## Usage
 
-Upon restart, it will automatically create the sensors and button.  No configuration needed.  No data will be found in those sensors until it is triggered.  Please see the following section for details on that.
+Upon restart, it will automatically create the sensors and button.  No configuration needed.  No data will be found in those sensors until it is triggered.  Please see [Trigger Methods](#trigger-methods) for details on that.
 
-### Location Source
+### Configuration
 
-By default the integration uses the coordinates of `zone.home`.  To use a GPS tracker instead, go to **Settings > Devices & Services > Public Lands > Configure** and pick any zone, device tracker, person, or sensor that has latitude and longitude.
+Everything works with the defaults.  To change a setting, go to **Settings > Devices & Services > Public Lands > Configure**.  Saving reloads the integration; your last values are kept.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Location entity | `zone.home` | Where the coordinates come from.  Pick any zone, device tracker, person, or sensor that has latitude and longitude, for example your van's GPS tracker. |
+| City and county sensors | Off | Adds **USPL City** and **USPL County**.  See [Optional Sensors](#optional-sensors). |
+| Rules link sensor | Off | Adds **USPL Rules Link**. |
+| Nearby campgrounds sensor | Off | Adds **USPL Nearby Campgrounds**.  Needs a Recreation.gov API key. |
+| Recreation.gov API key | Empty | Your own free key from [ridb.recreation.gov](https://ridb.recreation.gov/).  Only needed for nearby campgrounds. |
+| Campground search radius | 25 miles | How far to look for campgrounds: 5 to 25 miles (Recreation.gov's maximum). |
 
 ### Optional Sensors
 
-These are off by default.  Turn them on under **Settings > Devices & Services > Public Lands > Configure**.  They update when you press **Refresh USPL**, and turning one off removes its sensors.
+These are off by default.  Turn them on in [Configuration](#configuration).  They update when you press **Refresh USPL**, and turning one off removes its sensors.
 
 | Option | Sensors | Source |
 |--------|---------|--------|
@@ -118,7 +120,7 @@ mode: single
 If you use a binary sensor to track when RV is moving / not moving, I suggest triggering a button press when transitioning from moving to not moving state.  This will capture the GPS coordinates at the time the vehicle stops and not the last update interval.  This is relevant when stopping to validate the jurisdiction of a campsite.
 
 ### Sensors
-The following sensors will be created upon installation.
+The following sensors will be created upon installation.  [Optional sensors](#optional-sensors) are listed separately.
 
 | Sensor | Description |
 |--------|-------------|
@@ -169,11 +171,24 @@ data:
 response_variable: land
 ```
 
+The response has the same values as the sensors.  Any optional sensors that are turned on are included under `extras` (`city_county`, `rules_link`, `campgrounds`).
+
 ### Dashboard Visibility Recommendations
 
 If you want to hide USPL sensors when they're unavailable (such as no Internet connectivity), use the API status and conditional visibility in your dashboard.
 
 If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Private Land' or 'Non-Protected Area'.
+
+To show the rules link as a clickable link, use a Markdown card:
+
+```yaml
+type: markdown
+content: >
+  {% set url = states('sensor.uspl_rules_link') %}
+  {% if url.startswith('http') %}
+  [{{ state_attr('sensor.uspl_rules_link', 'name') }} rules]({{ url }})
+  {% endif %}
+```
 
 ### Example Data
 
@@ -193,7 +208,7 @@ If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 
 
 ## Notes
 
-- **Connectivity** - Internet is required at the time of the button press.
+- **Connectivity** - Internet is required at the time of the button press.  If an optional lookup fails, its sensor shows unknown, and the land sensors and API Status are not affected.
 - **Polling** - The integration does not automatically poll.  It leaves this task to the user to configure either manually or via automation.
 - **Frequency** - Please limit your automated refresh period to no less than **10 minutes** while in motion.
 - **GPS Accuracy** - The GPS coordinates are limited to four decimal places (-118.1222,36.5597).  This limits the accuracy to about 11 meters.
