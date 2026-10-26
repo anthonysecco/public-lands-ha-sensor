@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: "0 7 * * 1"
   workflow_dispatch:
+  push:
+    paths:
+      - "scripts/check_links.py"
+      - "custom_components/public_lands/const.py"
+      - "custom_components/public_lands/rules.py"
+      - "custom_components/public_lands/forests.py"
+      - ".github/workflows/links.yml"
 
 permissions:
   contents: read
