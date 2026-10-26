@@ -8,314 +8,69 @@
 [![Link check](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/links.yml/badge.svg)](https://github.com/anthonysecco/public-lands-ha-sensor/actions/workflows/links.yml)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/anthonysecco)
 
-This is a HACS custom integration that looks up the land at your current GPS location in Home Assistant and tells you who manages it.
+A Home Assistant integration that looks up the land at your current GPS location and tells you who manages it, with a link to that office's rules.  Useful when looking for dispersed camping to quickly understand what land and jurisdiction you're on.
 
-It uses two official, free sources (no API key needed):
+- **Land:** name, designation, manager and public access, from USGS PAD-US and BLM's surface management map.  Shows **Private Land** on private land.
+- **Rules link:** the BLM field office, National Park, National Forest or Wildlife Refuge page.
+- **Optional:** city, county and state (U.S. Census Bureau), and nearby campgrounds (Recreation.gov, with your own free API key).
 
-- **USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services)** ([Manager Name layer](https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Manager_Name_PADUS/FeatureServer/0)) covers almost any protected or public land in the United States, including federal, state, county, and regional lands.
-- **BLM [Surface Management Agency](https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1)** map is used when PAD-US has no record. It tells you when you are on private land and fills small gaps in PAD-US, such as road corridors inside a park.
+United States only.  Needs an Internet connection when it refreshes.  No account or key needed for the main sensors.
 
-The Management Name sensor also links to the managing office's own rules page.  [Optional sensors](#optional-sensors) add city and county (U.S. Census Bureau) and nearby campgrounds (Recreation.gov, with your own free API key).
-
-This can be useful when finding dispersed camping to quickly understand what land and jurisdiction you are within.
-
-> An Internet connection is required for this integration to work.
->
-> Only available for the United States.
-
-This integration pairs nicely with [Geolocator](https://github.com/SmartyVan/hass-geolocator) by [SmartyVan](https://www.youtube.com/@SmartyVan) which provides geocoded address and timezone services.
+This integration pairs nicely with [Geolocator](https://github.com/SmartyVan/hass-geolocator) by [SmartyVan](https://www.youtube.com/@SmartyVan), which provides geocoded address and timezone services.
 
 ⚠️ **Dispersed Camping Disclaimer** ⚠️
 
-Use your judgement when deciding where to setup a dispersed camp.  I am not responsible for the accuracy of the data or whether you run into problems at your chosen location.  Refer to the applicable government website for rules and regulations on dispersed camping for your chosen location.
-
-With that out of the way, let's get started...
+Use your judgement when deciding where to set up a dispersed camp.  I am not responsible for the accuracy of the data or whether you run into problems at your chosen location.  Refer to the applicable government website for rules and regulations on dispersed camping for your chosen location.
 
 ## Installation
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=anthonysecco&repository=public-lands-ha-sensor&category=integration)
 
-> This integration is not yet available in the HACS default store.  Meanwhile, it will be added as a custom repository.
+> Not yet in the HACS default store, so it's added as a custom repository.
 
-1. Click "Open HACS Repository" button above and install **Public Lands**
-2. Restart Home Assistant
-3. Navigate to Settings > Devices & Services
-4. Click **Add Integration** at the bottom
-5. Search for **Public Lands**
+1. Click the button above and install **Public Lands** in HACS.
+2. Restart Home Assistant.
+3. Go to **Settings > Devices & Services**, click **Add Integration**, and search for **Public Lands**.
 
-### Manual Installation
+**Manual installation:** download the [latest release](https://github.com/anthonysecco/public-lands-ha-sensor/releases), copy `custom_components/public_lands` into your Home Assistant `config/custom_components/` folder, and restart.
 
-1. Download the source code of the [latest release](https://github.com/anthonysecco/public-lands-ha-sensor/releases).
-2. Unzip the source code download.
-3. Copy **public_lands** from the **custom_components** directory you just downloaded to your Home Assistant **custom_components** directory:
-   ```
-   config/custom_components/public_lands/
-   ```
-4. Restart Home Assistant.
+Upgrading from v0.2.x is safe; see the [changelog](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/CHANGELOG.md#upgrading-from-v02x).
 
-### Upgrading from v0.2.x
+## Quick Start
 
-Upgrading is safe.  Entity IDs, the refresh button, and sensor values keep the same names and wording, so your dashboards and automations keep working.  What changes:
+1. Press **Refresh USPL** (`button.refresh_uspl`).  The sensors fill in for your current location.
+2. Add an [automation](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/automations.md) to refresh when you move or park.
+3. Optional: under **Configure**, choose a GPS tracker as the location and turn on extra sensors.
 
-- Private land now shows **Private Land** instead of blank sensors.
-- Sensors keep their last values after a Home Assistant restart.
-- The Unit Name sensor has new attributes, and Management Name links to the managing office's rules page (see [Sensors](#sensors)).
-- [Optional sensors](#optional-sensors) are off, so no new entities appear until you turn them on.
+## Sensors
 
-## Usage
+| Sensor | Example |
+|--------|---------|
+| USPL Unit Name | Alabama Hills National Scenic Area |
+| USPL Designation | National Scenic, Botanical or Volcanic Area |
+| USPL Management Name | Bureau of Land Management, with a link to Bishop Field Office's rules page |
+| USPL Management Type | Federal |
+| USPL Public Access | Restricted Access |
+| USPL API Status | On when the last refresh worked |
+| USPL Last Successful Refresh | When the last refresh worked |
+| Optional: USPL City, County, State | Unincorporated · Inyo County · California |
+| Optional: USPL Nearby Campgrounds | 3 campgrounds within 25 miles |
 
-Upon restart, it will automatically create the sensors and button.  No configuration needed.  No data will be found in those sensors until it is triggered.  Please see [Trigger Methods](#trigger-methods) for details on that.
+Sensors keep their last values across restarts and when a refresh fails.
 
-### Configuration
+## Documentation
 
-Everything works with the defaults.  To change a setting, go to **Settings > Devices & Services > Public Lands > Configure**.  Saving reloads the integration; your last values are kept.
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Location entity | `zone.home` | Where the coordinates come from.  Pick any zone, device tracker, person, or sensor that has latitude and longitude, for example your van's GPS tracker. |
-| City, county and state sensors | Off | Adds **USPL City**, **USPL County** and **USPL State**.  See [Optional Sensors](#optional-sensors). |
-| Nearby campgrounds sensor | Off | Adds **USPL Nearby Campgrounds**.  Needs a Recreation.gov API key. |
-| Recreation.gov API key | Empty | Your own free key from [ridb.recreation.gov](https://ridb.recreation.gov/).  Only needed for nearby campgrounds. |
-| Campground search radius | 25 miles | How far to look for campgrounds: 10 to 25 miles (25 is Recreation.gov's maximum). |
-
-### Optional Sensors
-
-These are off by default.  Turn them on in [Configuration](#configuration).  They update when you press **Refresh USPL**, and turning one off removes its sensors.
-
-| Option | Sensors | Source |
-|--------|---------|--------|
-| City, county and state | **USPL City** (or "Unincorporated" outside city limits), **USPL County** and **USPL State**.  Many overnight-parking bans are city rules. | U.S. Census Bureau [TIGERweb](https://tigerweb.geo.census.gov/) (no key) |
-| Nearby campgrounds | **USPL Nearby Campgrounds**: how many Recreation.gov campgrounds and dispersed-camping sites are within the search radius (10 to 25 miles, default 25).  The nearest ten are attributes with name, distance, booking (Reservable, First come or Dispersed), stay limit, phone, a Recreation.gov link and a directions link.  Campgrounds the Forest Service reports closed for the season are left out (`closed_hidden` counts them); other agencies don't publish a status. | [Recreation.gov RIDB](https://ridb.recreation.gov/) (needs your own free API key) and the Forest Service |
-
-**Recreation.gov API key:** sign up at [ridb.recreation.gov](https://ridb.recreation.gov/), create an API key in your account, and paste it into the Configure screen.  The key is checked before it's saved and stays on your Home Assistant.  Recreation.gov's terms don't allow sharing a key, so each user needs their own.  Campground data: ridb.recreation.gov.
-
-### Trigger Methods
-
-#### Press the Button
-This is simple.  If you want to know your USPL status immediately based on Home Assistant's current coordinate, press the button.
-
-![image](https://github.com/user-attachments/assets/57a87b6e-a57f-4bb3-8e7f-d66b9b1e4b7e)
-
-#### Create Automation
-
-##### Upon GPS Update
-Here's an example automation that will refresh USPL data when the zone.home is updated.  It will update at 10 minute intervals when the GPS coordinates are changing.
-
-```yaml
-alias: "USPL: Update via Button"
-description: "Presses the Refresh USPL button when zone.home changes, throttled to once every 10 minutes."
-triggers:
-  - trigger: state
-    entity_id: zone.home
-conditions:
-  - condition: template
-    value_template: >
-      {{ (as_timestamp(now()) - as_timestamp(this.attributes.last_triggered | default(0, true))) > 600 }}
-actions:
-  - action: button.press
-    target:
-      entity_id: button.refresh_uspl
-mode: single
-```
-
-##### Upon Parking
-If you use a binary sensor to track when RV is moving / not moving, I suggest triggering a button press when transitioning from moving to not moving state.  This will capture the GPS coordinates at the time the vehicle stops and not the last update interval.  This is relevant when stopping to validate the jurisdiction of a campsite.
-
-### Sensors
-The following sensors will be created upon installation.  [Optional sensors](#optional-sensors) are listed separately.
-
-| Sensor | Description |
-|--------|-------------|
-| Unit Name | This is the high level known name "Yosemite National Park" or "Alabama Hills National Scenic Area."  Shows **Private Land** on private land. |
-| Designation | Wilderness Area, National Park etc. |
-| Management Name | National Park Service, Bureau of Land Management etc. |
-| Management Type | State, Federal, Regional etc. |
-| Public Access | Open to the Public, Restricted Access (permit needed), Closed to the Public (military base). |
-| API Status | 'On' if last refresh was successful.  'Off' if last refresh failed. |
-| Last Successful Refresh | Timestamp of last refresh |
-
-When areas overlap, the sensors show the most specific one (for example a Wilderness Area inside a National Forest), the same as earlier versions.
-
-The **Unit Name** sensor also has these attributes:
-
-| Attribute | Description |
-|-----------|-------------|
-| underlying_land | The land parcel under a special designation, for example "Bishop Field Office" under Alabama Hills. |
-| overlapping_areas | Every area at your location. |
-| source | `PAD-US`, `PAD-US (nearby)` when a small gap in PAD-US was filled from an area within 300 m managed by the same agency, or `BLM Surface Management`. |
-| surface_manager | Who BLM's map says manages the surface, when it was used. |
-| latitude / longitude | The coordinates that were looked up. |
-| location_entity | The entity the coordinates came from. |
-
-The **Management Name** sensor has a link to the managing office's own web page, so you can read its rules.  Home Assistant shows these links as clickable when you open the sensor.
-
-| Attribute | Description |
-|-----------|-------------|
-| rules_office | The office the link is for, for example "Bishop Field Office" at Alabama Hills. |
-| rules_url | That office's page: the BLM field office, National Park, National Forest or Wildlife Refuge.  Other public land links to a Recreation.gov search. |
-| general_rules_url | BLM's general camping rules page (on BLM land only). |
-
-These attributes are left out on private land.  National Park and National Forest links take one extra lookup per refresh; if it fails, the attributes are left out and the other sensors still update.
-
-These sensors will not populate with data until the Refresh USPL button is pressed for the first time.  After that, they keep their last values across restarts.
-
-#### No Internet Connection Scenario
-In the event there's no connectivity, the sensors will retain their old values.  API status will be set to 'off'.  Once the condition clears, API status will be set to 'on' and all sensors will refresh.
-
-### Buttons
-The integration will create one button
-
-| Button | Description |
-|--------|-------------|
-| Refresh USPL | Pressing this button will call for the API with the current coordinates. |
-
-The button can be exposed to the UI for manual trigger or via automations previously mentioned.
-
-### Actions
-
-**Public Lands: Look up a location** (`public_lands.lookup`) checks any coordinate and returns the result without changing the sensors, for example to check a destination before you drive there.  Leave the coordinates out to use the current location.
-
-```yaml
-action: public_lands.lookup
-data:
-  latitude: 36.6
-  longitude: -118.13
-response_variable: land
-```
-
-The response has the same values as the sensors, plus the rules link under `rules_link`.  Any optional sensors that are turned on are included under `extras` (`city_county`, `campgrounds`).
-
-### Dashboard Visibility Recommendations
-
-If you want to hide USPL sensors when they're unavailable (such as no Internet connectivity), use the API status and conditional visibility in your dashboard.
-
-If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Private Land' or 'Non-Protected Area'.
-
-#### Rules Link Card
-
-The rules link is clickable when you open **USPL Management Name** (under Attributes).  To put it on a dashboard, add a **Markdown** card and paste this into its code editor.  It shows where you are and links to the managing office's rules page, plus BLM's camping page on BLM land:
-
-```yaml
-type: markdown
-content: |
-  {% set manager = 'sensor.uspl_management_name' %}
-  {% set rules_url = state_attr(manager, 'rules_url') %}
-  {% set general_url = state_attr(manager, 'general_rules_url') %}
-  {% set county = states('sensor.uspl_county') %}
-  {% if county not in ['unknown', 'unavailable'] %}
-  {{ states('sensor.uspl_city') }} · {{ county }}
-  {% endif %}
-  ### {{ states('sensor.uspl_unit_name') }}
-
-  {{ states('sensor.uspl_designation') }} · {{ states(manager) }}
-
-  Access: {{ states('sensor.uspl_public_access') }}
-
-  {% if rules_url %}
-  📜 [{{ state_attr(manager, 'rules_office') }}]({{ rules_url }})
-  {% if general_url %}
-
-  🏕️ [BLM Camping]({{ general_url }})
-  {% endif %}
-  {% else %}
-  No rules link for this location.
-  {% endif %}
-```
-
-At Alabama Hills it shows:
-
-> Unincorporated · Inyo County
-> ### Alabama Hills National Scenic Area
-> National Scenic, Botanical or Volcanic Area · Bureau of Land Management
->
-> Access: Restricted Access
->
-> 📜 [Bishop Field Office](https://www.blm.gov/office/bishop-field-office)
->
-> 🏕️ [BLM Camping](https://www.blm.gov/programs/recreation/camping)
-
-The city and county line appears only when the [City, county and state](#optional-sensors) option is on.  "Unincorporated" means you're outside any city's limits.  On private land the card shows "No rules link for this location."
-
-#### Nearby Campgrounds Card
-
-With the [Nearby campgrounds](#optional-sensors) option on, this Markdown card lists the nearest campgrounds with links to Recreation.gov (to check availability and book) and to directions:
-
-```yaml
-type: markdown
-content: |
-  {% set s = 'sensor.uspl_nearby_campgrounds' %}
-  {% set camps = state_attr(s, 'campgrounds') or [] %}
-  {% set total = states(s) | int(0) %}
-  {% set hidden = state_attr(s, 'closed_hidden') | int(0) %}
-  ### ⛺ {{ total }} campground{{ '' if total == 1 else 's' }} within {{ state_attr(s, 'radius_mi') | int(25) }} miles
-  {% if total > camps | count %}
-  *Showing the nearest {{ camps | count }}*
-  {% endif %}
-  {% for c in camps %}
-
-  **[{{ c.name }}]({{ c.url }})** · {{ c.distance_mi }} mi · {{ c.booking }}<br>
-  🧭 [Directions]({{ c.directions_url }}){% if c.phone %} · 📞 {{ c.phone }}{% endif %}
-  {% endfor %}
-  {% if total == 0 %}
-  No Recreation.gov campgrounds nearby.
-  {% endif %}
-  {% if hidden %}
-
-  *{{ hidden }} closed for the season hidden*
-  {% endif %}
-
-  *Data: ridb.recreation.gov*
-```
-
-Near Alabama Hills in late October it shows:
-
-> ### ⛺ 3 campgrounds within 25 miles
->
-> **[Tuttle Creek Campground](https://www.recreation.gov/camping/campgrounds/10004620)** · 2.4 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.565,-118.127)
->
-> **[Lone Pine](https://www.recreation.gov/camping/campgrounds/232069)** · 3 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.5976111,-118.1848056) · 📞 760-937-6070
->
-> **[Grays Meadows](https://www.recreation.gov/camping/campgrounds/232052)** · 14.8 mi · Reservable<br>
-> 🧭 [Directions](https://www.google.com/maps/dir/?api=1&destination=36.7688889,-118.295) · 📞 760-937-6070
->
-> *2 closed for the season hidden*
->
-> *Data: ridb.recreation.gov*
-
-Recreation.gov lists mainly federal campgrounds (Forest Service, BLM, National Park Service, Army Corps).  State and county parks, such as most Bay Area campgrounds, aren't included, so the card can show none near cities.  It doesn't show tonight's availability: Recreation.gov's API doesn't offer it, so tap the campground's name to check.
-
-### Example Data
-
-**Public Land**
-
-![image](https://github.com/user-attachments/assets/00ed28f7-26b3-4228-8489-aa490f7b0807)
-
-![image](https://github.com/user-attachments/assets/55b51e88-e30e-4279-a5f0-184be36588fa)
-
-![image](https://github.com/user-attachments/assets/c7ebddaa-8812-429f-bf1b-c62fa6d7a434)
-
-![image](https://github.com/user-attachments/assets/3e7802b6-4a40-4656-91f9-467b24d82469)
-
-**Non-Public Land**
-
-![image](https://github.com/user-attachments/assets/d542a6f6-8fcd-4da2-8b8c-27b513d92afc)
-
-## Notes
-
-- **Connectivity** - Internet is required at the time of the button press.  If an optional lookup fails, its sensor shows unknown, and the land sensors and API Status are not affected.
-- **Polling** - The integration does not automatically poll.  It leaves this task to the user to configure either manually or via automation.
-- **Frequency** - Please limit your automated refresh period to no less than **10 minutes** while in motion.
-- **GPS Accuracy** - The GPS coordinates are limited to four decimal places (-118.1222,36.5597).  This limits the accuracy to about 11 meters.
-- **Data Accuracy** - PAD-US is published by USGS (United States Geological Survey) every one to two years; the current release is 4.1 (March 2025).  BLM updates its surface management map as land changes hands.
+- [Configuration](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/configuration.md): every setting, optional sensors and the Recreation.gov key
+- [Sensors and actions](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/sensors.md): all sensors, attributes and the `public_lands.lookup` action
+- [Dashboard cards](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/dashboard.md): rules link and nearby campground cards
+- [Automations](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/automations.md): refresh when you move or park
+- [Data sources](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/docs/data-sources.md): where the data comes from, accuracy and limits
+- [Changelog](https://github.com/anthonysecco/public-lands-ha-sensor/blob/main/CHANGELOG.md)
 
 ## Future Enhancements
 
-Ideas being considered for later versions:
-
-- **Camping guidance** - a sensor summarizing whether dispersed camping is generally allowed for the land you are on.
-- **Red Flag Warnings** - National Weather Service fire weather warnings for your location.
+- **Camping guidance:** a sensor summarizing whether dispersed camping is generally allowed for the land you are on.
+- **Red Flag Warnings:** National Weather Service fire weather warnings for your location.
 
 ## 💖 Support
 
