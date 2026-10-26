@@ -9,7 +9,11 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import (
+    DOMAIN as SENSOR_DOMAIN,
+    SensorDeviceClass,
+    SensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -58,11 +62,11 @@ class PublicLandsSensor(PublicLandsEntity, SensorEntity):
         icon: str,
         field: str,
     ) -> None:
-        super().__init__(coordinator)
         self._field = field
         self._attr_name = f"USPL {name}"
         self._attr_icon = icon
         self._attr_unique_id = f"uspl_{key}"
+        super().__init__(coordinator, SENSOR_DOMAIN)
 
     @property
     def native_value(self) -> str | None:
@@ -98,6 +102,9 @@ class LastSuccessSensor(PublicLandsEntity, SensorEntity):
     _attr_icon = "mdi:clock-outline"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
+    def __init__(self, coordinator: PublicLandsCoordinator) -> None:
+        super().__init__(coordinator, SENSOR_DOMAIN)
+
     @property
     def native_value(self) -> datetime | None:
         return self.coordinator.last_success
@@ -110,6 +117,10 @@ class PublicLandsStatusBinarySensor(PublicLandsEntity, BinarySensorEntity):
     _attr_unique_id = "uspl_api_status"
     _attr_icon = "mdi:check-network"
     _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+
+    def __init__(self, coordinator: PublicLandsCoordinator) -> None:
+        # Registered on the sensor platform, so its ID is sensor.uspl_api_status.
+        super().__init__(coordinator, SENSOR_DOMAIN)
 
     @property
     def is_on(self) -> bool:

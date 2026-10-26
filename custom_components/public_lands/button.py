@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -27,6 +27,9 @@ class RefreshUSPLButton(PublicLandsEntity, ButtonEntity):
     _attr_name = "Refresh USPL"
     _attr_unique_id = "refresh_uspl"
     _attr_icon = "mdi:refresh"
+
+    def __init__(self, coordinator: PublicLandsCoordinator) -> None:
+        super().__init__(coordinator, BUTTON_DOMAIN)
 
     async def async_press(self) -> None:
         await self.coordinator.async_refresh()
