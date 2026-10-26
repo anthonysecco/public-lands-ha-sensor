@@ -1,0 +1,20 @@
+lookup:
+  fields:
+    latitude:
+      required: false
+      example: 36.6
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: any
+          mode: box
+    longitude:
+      required: false
+      example: -118.13
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: any
+          mode: box

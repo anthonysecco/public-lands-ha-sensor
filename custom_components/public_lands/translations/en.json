@@ -1,0 +1,40 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Public Lands is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Location source",
+        "description": "Choose the entity whose latitude and longitude are looked up when you press Refresh USPL.",
+        "data": {
+          "location_entity": "Location entity"
+        },
+        "data_description": {
+          "location_entity": "A zone, device tracker, person or sensor with latitude and longitude. The default is zone.home."
+        }
+      }
+    },
+    "error": {
+      "no_coordinates": "That entity has no latitude and longitude right now."
+    }
+  },
+  "services": {
+    "lookup": {
+      "name": "Look up a location",
+      "description": "Looks up the public land at a coordinate and returns the result without changing the sensors. Leave the coordinates empty to use the current location.",
+      "fields": {
+        "latitude": {
+          "name": "Latitude",
+          "description": "Latitude to look up. Give both latitude and longitude, or neither."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Longitude to look up. Give both latitude and longitude, or neither."
+        }
+      }
+    }
+  }
+}
