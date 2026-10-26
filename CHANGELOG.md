@@ -11,11 +11,7 @@ Upgrading is safe.  Entity IDs, the refresh button and sensor values keep the sa
 - Unit Name has new attributes, and Management Name links to the managing office's rules page.
 - Optional sensors are off, so no new entities appear until you turn them on.
 
-## v0.3.0-beta2
-
-- Fixed campground links for campgrounds you can't book on Recreation.gov, which have no Recreation.gov page.  First-come Forest Service campgrounds now link to their Forest Service page, and others to their Recreation.gov area page.
-
-## v0.3.0-beta
+## v0.3.0
 
 **Land lookup**
 - Switched to the USGS PAD-US 4.1 Manager Name layer.  Same sensor values as before, plus `underlying_land` and `overlapping_areas` attributes on Unit Name.
@@ -24,7 +20,7 @@ Upgrading is safe.  Entity IDs, the refresh button and sensor values keep the sa
 
 **Optional sensors** (off by default, under Configure)
 - **USPL City, County and State** from the U.S. Census Bureau.
-- **USPL Nearby Campgrounds** from Recreation.gov, with your own free API key: campgrounds and dispersed-camping sites within 10 to 25 miles, the nearest ten with a short description, phone, booking type, Recreation.gov and directions links.  Campgrounds the Forest Service reports closed are hidden.
+- **USPL Nearby Campgrounds** from Recreation.gov, with your own free API key: campgrounds and dispersed-camping sites within 10 to 25 miles, the nearest ten with a short description, phone, booking type and directions links.  Each links to its Recreation.gov page if reservable, its Forest Service page if it's a first-come Forest Service campground, or otherwise its Recreation.gov area page.  Campgrounds the Forest Service reports closed are hidden.
 
 **New settings and actions**
 - Choose the location entity (default `zone.home`).
