@@ -191,16 +191,50 @@ If you want to hide USPL sensors when they're unavailable (such as no Internet c
 
 If you want to hide USPL sensors when on private land, hide when 'Unit Name' is 'Private Land' or 'Non-Protected Area'.
 
-The rules link is clickable when you open **USPL Management Name** (under Attributes).  To put it on a dashboard, use a Markdown card:
+#### Rules Link Card
+
+The rules link is clickable when you open **USPL Management Name** (under Attributes).  To put it on a dashboard, add a **Markdown** card and paste this into its code editor.  It shows where you are and links to the managing office's rules page, plus BLM's camping page on BLM land:
 
 ```yaml
 type: markdown
-content: >
-  {% set url = state_attr('sensor.uspl_management_name', 'rules_url') %}
-  {% if url %}
-  [{{ state_attr('sensor.uspl_management_name', 'rules_office') }} rules]({{ url }})
+content: |
+  {% set manager = 'sensor.uspl_management_name' %}
+  {% set rules_url = state_attr(manager, 'rules_url') %}
+  {% set general_url = state_attr(manager, 'general_rules_url') %}
+  {% set county = states('sensor.uspl_county') %}
+  {% if county not in ['unknown', 'unavailable'] %}
+  {{ states('sensor.uspl_city') }} · {{ county }}
+  {% endif %}
+  ### {{ states('sensor.uspl_unit_name') }}
+
+  {{ states('sensor.uspl_designation') }} · {{ states(manager) }}
+
+  Access: {{ states('sensor.uspl_public_access') }}
+
+  {% if rules_url %}
+  📜 [{{ state_attr(manager, 'rules_office') }}]({{ rules_url }})
+  {% if general_url %}
+
+  🏕️ [BLM Camping]({{ general_url }})
+  {% endif %}
+  {% else %}
+  No rules link for this location.
   {% endif %}
 ```
+
+At Alabama Hills it shows:
+
+> Unincorporated · Inyo County
+> ### Alabama Hills National Scenic Area
+> National Scenic, Botanical or Volcanic Area · Bureau of Land Management
+>
+> Access: Restricted Access
+>
+> 📜 [Bishop Field Office](https://www.blm.gov/office/bishop-field-office)
+>
+> 🏕️ [BLM Camping](https://www.blm.gov/programs/recreation/camping)
+
+The city and county line appears only when the [City and county](#optional-sensors) option is on.  "Unincorporated" means you're outside any city's limits.  On private land the card shows "No rules link for this location."
 
 ### Example Data
 
