@@ -193,6 +193,9 @@ Ideas being considered for later versions:
 - **Camping guidance** - a sensor summarizing whether dispersed camping is generally allowed for the land you are on.
 - **Nearby campgrounds** - from Recreation.gov, using your own free API key.
 - **Red Flag Warnings** - National Weather Service fire weather warnings for your location.
+- **City and county** - which city limits and county you are in, from the Census Bureau, to help with local overnight-parking rules.
+- **Nearest rest area** - the closest highway rest area from OpenStreetMap, with a note on that state's overnight parking rules.
+- **Nearby services** - drinking water, dump stations and showers near you from OpenStreetMap.
 
 ## 💖 Support
 
